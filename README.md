@@ -31,3 +31,15 @@ Så skrive ned det.
 
 Onsdagen 15:30 neste møte :: 
 
+
+notatene fra møtet med Trym i går (21/1): Mvp - snakke med ekstern veileder om hva de tenker? Lage noe som de faktisk er ute etter. 
+Intervjuer med brukere når det kommer til dette.
+lage risikoanalyse (putte i risikoanalyse: problem med å finne data). 
+datasett -> bruke chatgpt (gjøre bredt søk i starten), legge punkter på hva vi er ute etter. Deep research på GPT (trykke på + og gjøre Deep research). Verifisere etterpå om det faktisk er det vi ute etter. Bra for å undersøke hvilke modeller som finnes. 
+Snakke med ekstern om å teste data der? og om de har ressurser til å trene modellene våres? 
+Kan fortsatt bruke datasett med annen data enn av lungesvulst, fordi da lærer modellen seg å gjenkjenne hva som er lungekreft og hva som er de andre tingene. Bare sjekk hvor mange label det er av lungekreft - og bør ha balansert labels av dataene.
+Se på lisensen på data hvis det feks ligger på github - om tillatelse til å bruke data. Sjekke lisenser - og skrive om i rapporten også under risikoanalyse. 
+Legge til filter i Kaggle ved søk (Image Classification): https://www.kaggle.com/datasets?search=Lung+cancer&tags=16686-Image+Classification 
+Tips ved søk: Bruke logikk som f.eks. AND ved google søk. 
+Se på phd-avhandling av automatic detection and classification of lung cancer.. (den har litteratur i bio også, se datasett s.63), link: 
+
