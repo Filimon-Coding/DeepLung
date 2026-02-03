@@ -43,3 +43,27 @@ Legge til filter i Kaggle ved søk (Image Classification): https://www.kaggle.co
 Tips ved søk: Bruke logikk som f.eks. AND ved google søk. 
 Se på phd-avhandling av automatic detection and classification of lung cancer.. (den har litteratur i bio også, se datasett s.63), link: 
 
+
+
+
+Neste møte 4/2 Onsdag 15.30.
+ 
+Ml ops oppsettet - ML flow brukes til sånn type tracking (tracking av parametre)
+ 
+Klassifisering (gjennom heatmap)
+ 
+Utdype noen punkter i forprosjektrapporten: som Hvordan frontend skal se ut.
+Ta med risikoanalyse i forprosjektrapporten (sannsynlighet, konsekvens og håndtering)
+ 
+Ha noen brukerhistorier: hva slags metrix de er ute etter? - hva som gjør at de stoler på dette systemet?
+Se på Trustworthyness av AI (passe på at treningsdataet faktisk blir på selve lungene og ikke noe rundt). - Dette kommer fint fram gjennom heathmap metoder. 
+ 
+Tenke på hva som kan gjøres i parallell for å klare å komme i mål.
+Jobbe med applikasjonsframeworket (frontend) samtidig som datasettet /litteraturstudie.
+Begynne å tenke på design av pipeline allerede nå.
+Referere det tilbake til emnet vi har hatt om dette med "planlegging": Systemutvikling.
+Prosjektdokumentasjon kan foregås hele tiden. 
+ 
+Ikke bruke ordet startup om prosjektet.
+ 
+Satero / Zotero?? - for å holde styr på litteraturen (samle og lagre litteratur) - som extencion i word?. Man kan dele sånn at man har felles bibliotek mellom flere personer. Satero gir fin mappestruktur.
