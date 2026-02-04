@@ -67,3 +67,27 @@ Prosjektdokumentasjon kan foregås hele tiden.
 Ikke bruke ordet startup om prosjektet.
  
 Satero / Zotero?? - for å holde styr på litteraturen (samle og lagre litteratur) - som extencion i word?. Man kan dele sånn at man har felles bibliotek mellom flere personer. Satero gir fin mappestruktur.
+
+
+
+
+MØTE 4/2 NOTATER:
+Neste møte: onsdag 11/2 kl. 15.30
+ 
+Python-pakker som kan gjøre det automatisk Scikit-learn (dele opp malign og benigne svulster).
+Boxel-basert modell som leser det som 3D-modell - blir heavy for nettsiden/applikasjon? Får da større modell, computemessig blir det ikke større.
+Bedre resultater av å bruke hele datasettet - for å sjekke at pipeline funker starte med mindre.
+K-fold cross-validation (metode for å dele opp datasettet)
+Test vs. validation
+Må ha et datasett som du tester på en gang til slutt (ikke det samme som ble brukt til testdata).
+Lese om dataloaders, finnes på PyTorch.
+Virtuell environment lar deg ikke kjøre på tvers av OS (feks Linux og windows). Bruke heller docker?
+Sette opp at docker bruker Poetry (open source), Poetry mer etablert.
+UV (ultra violet) -> raskere.
+Pipeline: Dicom -> nifti -> PyTorch
+ 
+Videre arbeid:
+Se på CNN-modell (RestNet)
+Begynne å lage FrontEnd
+Brukertesting? - hva ønsker dere å se? Osv. Helst Lege/Radiologer, men også ok med studenter (tannlege, medisin, fysio).
+Ta kontakt med Hedda om GPUene nevne størrelsen på datasett til henne - sende mail til henne.
