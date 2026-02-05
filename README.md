@@ -75,7 +75,7 @@ MØTE 4/2 NOTATER:
 Neste møte: onsdag 11/2 kl. 15.30
  
 Python-pakker som kan gjøre det automatisk Scikit-learn (dele opp malign og benigne svulster).
-Boxel-basert modell som leser det som 3D-modell - blir heavy for nettsiden/applikasjon? Får da større modell, computemessig blir det ikke større.
+Voxel-basert modell som leser det som 3D-modell - blir heavy for nettsiden/applikasjon? Får da større modell, computemessig blir det ikke større.
 Bedre resultater av å bruke hele datasettet - for å sjekke at pipeline funker starte med mindre.
 K-fold cross-validation (metode for å dele opp datasettet)
 Test vs. validation
