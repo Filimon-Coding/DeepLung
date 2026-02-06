@@ -1,8 +1,7 @@
 # Bachelor-CRAI
 
 
-Vi diskutere og kom fram til vi skal bruke datasette keggel og https://www.kaggle.com/competitions/rsna-pneumonia-detection-challenge/data 
-
+Vi diskutere og kom fram til vi skal bruke datasette fra The Cancer Imaging Archives(TCIA) link: https://www.cancerimagingarchive.net/collection/lidc-idri/
 -- System utvikiling : utvikle model dere tenke å bruke 
         --> som eks. Brukerhistorie. 
         --> Github projekter. : Kanskje ikke bruke github actions
