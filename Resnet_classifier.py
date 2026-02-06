@@ -115,7 +115,6 @@ if device.type == "cuda":
 else:
     print("--- Training will run on: CPU (Warning: This will be very slow!) ---")
 
-# Bytt ut Simple3DCNN med denne kraftigere versjonen
 class ResidualBlock(nn.Module):
     def __init__(self, in_channels, out_channels, stride=1):
         super().__init__()
