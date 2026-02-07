@@ -92,11 +92,3 @@ Brukertesting? - hva ønsker dere å se? Osv. Helst Lege/Radiologer, men også o
 Ta kontakt med Hedda om GPUene nevne størrelsen på datasett til henne - sende mail til henne.
 
 
-
-
-WITH RESTNET COORDINATE
---- Epoch 21 Metrics ---
-Accuracy: 96.70% | Precision: 0.9595 | Recall: 1.0000 | F1: 0.9793
-Confusion Matrix:
-[[17  3]
- [ 0 71]]
