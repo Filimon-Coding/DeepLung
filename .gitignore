@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Dataset
+rsna-pneumonia-detection-challenge.zip
