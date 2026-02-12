@@ -92,3 +92,9 @@ Ta kontakt med Hedda om GPUene nevne størrelsen på datasett til henne - sende 
 
 
 80 prosent after 20 epochs - rest-net-test.py
+
+
+
+Gruppe møte 12.02.26
+Vi begynner å bruke Burndown chart for holde kontroll på progress 
+![alt text](image.png)
