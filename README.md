@@ -89,3 +89,6 @@ Se på CNN-modell (RestNet)
 Begynne å lage FrontEnd
 Brukertesting? - hva ønsker dere å se? Osv. Helst Lege/Radiologer, men også ok med studenter (tannlege, medisin, fysio).
 Ta kontakt med Hedda om GPUene nevne størrelsen på datasett til henne - sende mail til henne.
+
+
+80 prosent after 20 epochs - rest-net-test.py
