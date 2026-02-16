@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 
 /**
- * AnalyzeButton navigerer brukeren til analysesiden (/analyze)
+ * AnalyzeButton navigerer brukeren til resultssiden (/results)
  * når knappen trykkes.
  */
 function AnalyzeButton() {
@@ -10,7 +10,7 @@ function AnalyzeButton() {
   return (
     <button
       className="analyze-button"
-      onClick={() => navigate("/analyze")}
+      onClick={() => navigate("/results")}
     >
       Analyze Image
     </button>
