@@ -25,3 +25,10 @@ dist-ssr
 
 # Dataset
 rsna-pneumonia-detection-challenge.zip
+
+
+
+.venv
+
+nifti_output_python
+fan
