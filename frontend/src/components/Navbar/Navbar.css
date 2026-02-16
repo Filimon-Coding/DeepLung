@@ -1,0 +1,39 @@
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  background-color: #1a1a1a;
+  color: white;
+}
+
+.logo {
+  text-decoration: none;
+  color: white;
+  font-weight: bold;
+  font-size: 1.2rem;
+}
+
+.logo:hover {
+  color: #4caf50;
+}
+
+.nav-links {
+  display: flex;
+  gap: 1.5rem; /* gir mellomrom mellom Home og Analyze */
+  align-items: center;
+}
+
+.nav-link {
+  display: inline-block;
+  text-decoration: none;
+  padding: 0.25rem 0.5rem;
+}
+
+.nav-link:hover {
+  color: #4caf50;
+}
+
+.nav-link.active {
+  border-bottom: 2px solid #4caf50;
+}
