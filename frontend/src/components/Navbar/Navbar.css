@@ -1,39 +1,72 @@
 .navbar {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+
   display: flex;
   justify-content: space-between;
   align-items: center;
+
   padding: 1rem 2rem;
-  background-color: #1a1a1a;
-  color: white;
+
+  background: linear-gradient(90deg, #111827, #1f2937);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
 }
 
+/* Logo */
 .logo {
+  font-size: 1.4rem;
+  font-weight: 700;
   text-decoration: none;
-  color: white;
-  font-weight: bold;
-  font-size: 1.2rem;
+  color: #ffffff;
+  letter-spacing: 1px;
 }
 
 .logo:hover {
-  color: #4caf50;
+  color: #4ade80;
 }
 
+/* Links container */
 .nav-links {
   display: flex;
-  gap: 1.5rem; /* gir mellomrom mellom Home og Analyze */
-  align-items: center;
+  gap: 2rem;
 }
 
+/* Links */
 .nav-link {
-  display: inline-block;
+  position: relative;
   text-decoration: none;
-  padding: 0.25rem 0.5rem;
+  font-weight: 500;
+  color: #c084fc; /* mykere lilla */
+  transition: color 0.2s ease;
 }
 
+/* Hover */
 .nav-link:hover {
-  color: #4caf50;
+  color: #ffffff;
 }
 
+/* Active underline animation */
+.nav-link::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -6px;
+  width: 0%;
+  height: 2px;
+  background-color: #4ade80;
+  transition: width 0.25s ease;
+}
+
+.nav-link:hover::after {
+  width: 100%;
+}
+
+/* Active page */
 .nav-link.active {
-  border-bottom: 2px solid #4caf50;
+  color: #ffffff;
+}
+
+.nav-link.active::after {
+  width: 100%;
 }
