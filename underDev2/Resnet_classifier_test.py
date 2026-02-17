@@ -106,7 +106,7 @@ class NiiDataset(Dataset):
 # TRAINING: Heavy augmentation to generalize better
 train_transform = tio.Compose([
     tio.RescaleIntensity(out_min_max=(0, 1)),
-    tio.CropOrPad((128, 128, 128)),
+    tio.CropOrPad((32, 32, 32)),
     tio.RandomFlip(axes=(0, 1, 2)),          
     tio.RandomAffine(scales=(0.95, 1.05), degrees=5), 
     tio.RandomNoise(std=(0, 0.02)),         
@@ -116,7 +116,7 @@ train_transform = tio.Compose([
 # TEST: Standard preprocessing only
 test_transform = tio.Compose([
     tio.RescaleIntensity(out_min_max=(0, 1)),
-    tio.CropOrPad((128, 128, 128)),
+    tio.CropOrPad((32,32, 32)),
 ])
 
 train_dataset = NiiDataset(DATA_DIR/"Train", transform=train_transform)
@@ -238,7 +238,7 @@ for epoch in range(num_epochs):
     model.eval()
     val_correct, val_total = 0, 0
     with torch.no_grad():
-        for images, labels in test_loader:
+        for images, labels, paths  in test_loader:
             images, labels = images.to(device), labels.to(device)
             outputs = model(images)
             preds = outputs.argmax(dim=1)
