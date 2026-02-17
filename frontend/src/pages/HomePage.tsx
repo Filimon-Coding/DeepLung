@@ -12,7 +12,7 @@ function HomePage() {
       <p>
         This application demonstrates a typical AI pipeline for medical imaging.
         A trained convolutional neural network (CNN) can be used to support
-        detection of patterns in chest X-ray images.
+        detection of patterns in chest CT images.
       </p>
 
       <h2>How it works</h2>
