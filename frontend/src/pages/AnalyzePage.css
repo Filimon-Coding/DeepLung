@@ -1,0 +1,67 @@
+/* Container som gir bedre bredde og luft */
+.analyze-page {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2.5rem 1.25rem;
+}
+
+/* Header */
+.analyze-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.analyze-subtitle {
+  margin-top: 0.75rem;
+  color: #666;
+  line-height: 1.6;
+}
+
+/* Card-stil */
+.card {
+  background: #fff;
+  border: 1px solid #eee;
+  border-radius: 14px;
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+}
+
+.card-title {
+  margin: 0 0 0.25rem 0;
+  font-size: 1.1rem;
+}
+
+.card-hint {
+  margin: 0 0 1rem 0;
+  color: #777;
+  font-size: 0.95rem;
+}
+
+/* Sample-bildet */
+.sample-images {
+  display: flex;
+  justify-content: center;
+  margin: 1rem 0 1.25rem;
+}
+
+.sample-image {
+  width: 160px;
+  height: auto;
+  border-radius: 10px;
+  border: 1px solid #e5e5e5;
+}
+
+/* Knapp plassert pent */
+.analyze-button-row {
+  display: flex;
+  justify-content: center;
+}
+
+/* Liten disclaimer */
+.disclaimer {
+  margin-top: 0.9rem;
+  font-size: 0.85rem;
+  color: #777;
+  text-align: center;
+}
