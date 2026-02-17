@@ -1,32 +1,63 @@
 import { Link } from "react-router-dom";
+import "./HomePage.css";
 
 /**
- * HomePage: forklarer hvordan AI-modellen fungerer.
- * Ingen opplasting på denne siden.
+ * HomePage: Forklarer hvordan AI-modellen fungerer (ingen opplasting her).
  */
 function HomePage() {
   return (
-    <>
-      <h1>AI Medical Imaging Demo</h1>
+    <div className="home">
+      {/* Hero */}
+      <header className="hero">
+        <h1 className="hero-title">AI Medical Imaging Demo</h1>
+        <p className="hero-subtitle">
+          This application demonstrates a typical AI pipeline for medical imaging.
+          A trained convolutional neural network (CNN) can support detection of patterns
+          in chest CT images.
+        </p>
 
-      <p>
-        This application demonstrates a typical AI pipeline for medical imaging.
-        A trained convolutional neural network (CNN) can be used to support
-        detection of patterns in chest CT images.
-      </p>
+        {/* CTA */}
+        <Link to="/analyze" className="cta">
+          Go to Analyze
+        </Link>
+      </header>
 
-      <h2>How it works</h2>
-      <ol>
-        <li><strong>Input:</strong> An image is provided (uploaded or selected as a sample).</li>
-        <li><strong>Preprocessing:</strong> Resize/normalize to match the model’s expected input.</li>
-        <li><strong>Inference:</strong> The model computes a prediction score.</li>
-        <li><strong>Output:</strong> The UI displays the predicted result (and later, explanations).</li>
-      </ol>
+      {/* How it works */}
+      <section className="section">
+        <h2 className="section-title">How it works</h2>
 
-      <p>
-        <Link to="/analyze">Go to Analyze</Link>
-      </p>
-    </>
+        <div className="cards">
+          <div className="card">
+            <div className="card-step">1</div>
+            <h3 className="card-title">Input</h3>
+            <p className="card-text">
+              Provide an image (upload on the Analyze page or choose a sample).
+            </p>
+          </div>
+
+          <div className="card">
+            <div className="card-step">2</div>
+            <h3 className="card-title">Preprocessing</h3>
+            <p className="card-text">
+              The image is resized/normalized to match the model’s expected input.
+            </p>
+          </div>
+
+          <div className="card">
+            <div className="card-step">3</div>
+            <h3 className="card-title">Inference & Output</h3>
+            <p className="card-text">
+              The model computes a prediction score, and the UI displays the result
+              (and later, explanations like heatmaps).
+            </p>
+          </div>
+        </div>
+
+        <p className="disclaimer">
+          Educational demo only — not a medical diagnosis tool.
+        </p>
+      </section>
+    </div>
   );
 }
 
