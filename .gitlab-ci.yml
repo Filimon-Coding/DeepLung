@@ -22,18 +22,31 @@ smoke_test:
 
 train_gpu:
   stage: train
-  when: manual
-  allow_failure: false
+  rules:
+    - when: manual
+      allow_failure: true
   tags:
     - nvidia-a6000-2
   script:
+    - cd underDev2
     - pip install -r requirements.txt
-    # data ligger underDev2/Data (må ha Train/ og Test/)
-    - test -d underDev2/Data || (echo 'Missing underDev2/Data/ folder' && exit 1)
-    - test -d underDev2/Data/Train || (echo 'Missing underDev2/Data/Train' && exit 1)
-    - test -d underDev2/Data/Test || (echo 'Missing underDev2/Data/Test' && exit 1)
-    # kjør trening fra underDev2
-    - python underDev2/Resnet_classifier_test.py
+
+    # --- DEBUG / sanity checks ---
+    - echo "Listing underDev2 (top level):"
+    - ls -lah . || true
+    - echo "Listing Data (top level):"
+    - ls -lah Data || true
+    - echo "Disk usage for Data:"
+    - du -sh Data || true
+
+    # --- Data must exist ---
+    - test -d Data || (echo "Missing underDev2/Data/ folder" && exit 1)
+    - test -d Data/Train || (echo "Missing underDev2/Data/Train" && exit 1)
+    - test -d Data/Test || (echo "Missing underDev2/Data/Test" && exit 1)
+
+    # --- Run training ---
+    - python Resnet_classifier_test.py
+
   artifacts:
     when: always
     paths:
