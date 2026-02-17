@@ -28,7 +28,6 @@ LATEST_MODEL_PATH = MODEL_DIR / "resnet3d_latest.pth"
 
 
 
-'''
 
 def create_short_dataset(file_list, target_count=100):
     counts = {"Malignancy": 0, "Benign": 0}
@@ -64,7 +63,7 @@ if not DATA_DIR.exists():
     create_short_dataset(all_files, target_count=100)
 else:
     print(f"--- Folder '{DATA_DIR}' already exists. Skipping sorting. ---")
-'''
+
 ############################################
 # DATASET & LOADERS
 ############################################
