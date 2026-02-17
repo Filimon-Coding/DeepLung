@@ -1,0 +1,34 @@
+stages:
+  - test
+  - train
+
+smoke_test:
+  stage: test
+  image: python:3.11-slim
+  tags:
+    - shared-runner-2
+  script:
+    - python -V
+    - pip install --upgrade pip
+    # Ikke installer hele requirements (den har CUDA torch wheels)
+    # Vi tester bare at basis-imports funker:
+    - pip install numpy nibabel pydicom simpleitk torchio
+    - python -c "import torch; import torchio; import SimpleITK; print('Smoke test OK')"
+
+train_gpu:
+  stage: train
+  when: manual
+  tags:
+    - nvidia-a6000-2
+  image: python:3.11-slim
+  script:
+    - python -V
+    - pip install --upgrade pip
+    - pip install -r requirements.txt
+    - test -d Data || (echo 'Missing Data/ folder (Data/Train + Data/Test). Cannot train in CI.' && exit 1)
+    - python backend/Resnet_classifier_test.py
+  artifacts:
+    when: always
+    paths:
+      - checkpoints/
+    expire_in: 14 days
