@@ -6,18 +6,17 @@ smoke_test:
   stage: test
   image: python:3.11-slim
   tags:
-    - shared-runner-2
+    - xl-cloud-runner
   script:
     - python -V
     - pip install --upgrade pip
-    # Ikke installer hele requirements (den har CUDA torch wheels)
-    # Vi tester bare at basis-imports funker:
     - pip install numpy nibabel pydicom simpleitk torchio
     - python -c "import torch; import torchio; import SimpleITK; print('Smoke test OK')"
 
 train_gpu:
   stage: train
   when: manual
+  allow_failure: true
   tags:
     - nvidia-a6000-2
   image: python:3.11-slim
