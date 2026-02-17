@@ -23,7 +23,7 @@ smoke_test:
 train_gpu:
   stage: train
   when: manual
-  allow_failure: false
+  allow_failure: true
   tags:
     - nvidia-a6000-2
   script:
