@@ -13,7 +13,7 @@ default:
   cache:
     key: pip-${CI_COMMIT_REF_SLUG}
     paths:
-      - .cache/pip
+      - /root/.cache/pip
 
 smoke_test:
   stage: test
@@ -63,5 +63,4 @@ train_gpu:
     when: always
     paths:
       - underDev2/checkpoints/
-      - checkpoints/
     expire_in: 14 days
