@@ -98,3 +98,35 @@ Ta kontakt med Hedda om GPUene nevne størrelsen på datasett til henne - sende 
 Gruppe møte 12.02.26
 Vi begynner å bruke Burndown chart for holde kontroll på progress 
 ![alt text](image.png)
+
+
+
+Møte 18/2 med internveileder
+Datasett og databehandling
+	• Vi har et lite datasett, og bør derfor vurdere data augmentation som metode for å øke datamengden.
+	   • Eksempler: resize av bilder, rotasjon av bilder.
+	   • Noen benytter også generativ AI for å generere nye bilder basert på eksisterende bilder.
+
+	• Dersom datasettet er ubalansert (flere samples i én klasse enn i en annen), kan dette ha stor effekt på modellens ytelse.
+	   • Anbefalt å lese om class imbalance og metoder for å håndtere dette i machine learning.
+	• Målet er å skille mellom benigne og maligne tilfeller.
+	   • Det handler ikke primært om å gjenkjenne malignitet isolert, men å kunne skille mellom benign og malign.
+	   • Eventuelt også vurdere: Skille mellom knute og ikke knute?
+
+Modellvurdering
+	• Hvorvidt modellen er «bra» eller «ikke bra» er ikke det viktigste.
+	• Prosessen og metodikken bak arbeidet er det som har størst betydning.
+
+⸻
+
+Før neste møte – onsdag 25/2
+	• Avklare om møtet skal være digitalt eller fysisk.
+	   • Sende e-post til Trym.
+	• Er det begrensning på 10 GB i GitLab?
+	   • Eventuelt spørre Hedda om tilgang til mer lagringsplass/data.
+
+⸻
+
+Videre arbeid
+	• Etablere faste ukentlige møter på torsdager (avklare klokkeslett).
+	• Dokumentere arbeidet fortløpende på GitHub, slik at alle i prosjektet kan følge fremdriften i de ulike delene av arbeidet.
