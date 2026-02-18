@@ -106,7 +106,7 @@ class NiiDataset(Dataset):
 # TRAINING: Heavy augmentation to generalize better
 train_transform = tio.Compose([
     tio.RescaleIntensity(out_min_max=(0, 1)),
-    tio.CropOrPad((32, 32, 32)),
+    tio.CropOrPad((192, 192, 192)),
     tio.RandomFlip(axes=(0, 1, 2)),          
     tio.RandomAffine(scales=(0.95, 1.05), degrees=5), 
     tio.RandomNoise(std=(0, 0.02)),         
@@ -116,14 +116,14 @@ train_transform = tio.Compose([
 # TEST: Standard preprocessing only
 test_transform = tio.Compose([
     tio.RescaleIntensity(out_min_max=(0, 1)),
-    tio.CropOrPad((32,32, 32)),
+    tio.CropOrPad((192, 192, 192)),
 ])
 
 train_dataset = NiiDataset(DATA_DIR/"Train", transform=train_transform)
 test_dataset  = NiiDataset(DATA_DIR/"Test", transform=test_transform)
 
-train_loader = DataLoader(train_dataset, batch_size=1, shuffle=True)
-test_loader  = DataLoader(test_dataset, batch_size=1, shuffle=False)
+train_loader = DataLoader(train_dataset, batch_size=3, shuffle=True)
+test_loader  = DataLoader(test_dataset, batch_size=3, shuffle=False)
 
 print(f"--- Loaded {len(train_dataset)} training and {len(test_dataset)} testing samples ---")
 
@@ -198,10 +198,13 @@ optimizer = optim.Adam(model.parameters(), lr=1e-4)
 # Scheduler to lower LR when accuracy plateaus
 scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='max', patience=3, factor=0.5)
 
-num_epochs = 1
+num_epochs = 50
 best_accuracy = 0.0
 
 print(f"--- Training running on: {device} ---")
+scaler = torch.cuda.amp.GradScaler(enabled=(device.type == "cuda"))
+
+
 
 for epoch in range(num_epochs):
     # --- TRAINING PHASE ---
@@ -215,11 +218,14 @@ for epoch in range(num_epochs):
         batch_start = time.time()
         images, labels = images.to(device), labels.to(device)
         
-        optimizer.zero_grad()
-        outputs = model(images)
-        loss = criterion(outputs, labels)
-        loss.backward()
-        optimizer.step()
+        optimizer.zero_grad(set_to_none=True)
+        with torch.cuda.amp.autocast(enabled=(device.type == "cuda")):
+            outputs = model(images)
+            loss = criterion(outputs, labels)
+        scaler.scale(loss).backward()
+        scaler.step(optimizer)
+        scaler.update()
+
         
         preds = outputs.argmax(dim=1)
         correct += (preds == labels).sum().item()
@@ -240,7 +246,8 @@ for epoch in range(num_epochs):
     with torch.no_grad():
         for images, labels, paths  in test_loader:
             images, labels = images.to(device), labels.to(device)
-            outputs = model(images)
+            with torch.cuda.amp.autocast(enabled=(device.type == "cuda")):
+                outputs = model(images)
             preds = outputs.argmax(dim=1)
             val_correct += (preds == labels).sum().item()
             val_total += labels.size(0)
