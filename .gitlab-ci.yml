@@ -2,54 +2,32 @@ stages:
   - test
   - train
 
-default:
-  image: python:3.11-slim
-  before_script:
-    - python -V
-    - pip install --upgrade pip
-  cache:
-    key: pip-${CI_COMMIT_REF_SLUG}
-    paths:
-      - .cache/pip
-
 smoke_test:
   stage: test
+  image: python:3.11-slim
   tags:
     - xl-cloud-runner
   script:
-    - pip install numpy nibabel pydicom SimpleITK torchio torch torchvision
-    - python -c "import torch; import torchio; import SimpleITK; import nibabel; import pydicom; print('Smoke test OK')"
+    - python -V
+    - pip install --upgrade pip
+    - pip install numpy nibabel pydicom simpleitk torchio
+    - python -c "import torch; import torchio; import SimpleITK; print('Smoke test OK')"
 
 train_gpu:
   stage: train
-  rules:
-    - when: manual
-      allow_failure: true
+  when: manual
+  allow_failure: true
   tags:
     - nvidia-a6000-2
+  image: python:3.11-slim
   script:
-    - cd underDev2
+    - python -V
+    - pip install --upgrade pip
     - pip install -r requirements.txt
-
-    # --- DEBUG / sanity checks ---
-    - echo "Listing underDev2 (top level):"
-    - ls -lah . || true
-    - echo "Listing Data (top level):"
-    - ls -lah Data || true
-    - echo "Disk usage for Data:"
-    - du -sh Data || true
-
-    # --- Data must exist ---
-    - test -d Data || (echo "Missing underDev2/Data/ folder" && exit 1)
-    - test -d Data/Train || (echo "Missing underDev2/Data/Train" && exit 1)
-    - test -d Data/Test || (echo "Missing underDev2/Data/Test" && exit 1)
-
-    # --- Run training ---
-    - python Resnet_classifier_test.py
-
+    - test -d Data || (echo 'Missing Data/ folder (Data/Train + Data/Test). Cannot train in CI.' && exit 1)
+    - python backend/Resnet_classifier_test.py
   artifacts:
     when: always
     paths:
-      - underDev2/checkpoints/
       - checkpoints/
     expire_in: 14 days
