@@ -2,50 +2,68 @@ stages:
   - test
   - train
 
-default:
-  image: python:3.11-slim
-  before_script:
-    - python -V
-    - pip install --upgrade pip
-  cache:
-    key: pip-${CI_COMMIT_REF_SLUG}
-    paths:
-      - .cache/pip
+variables:
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
+  # Viktig: ikke last ned LFS automatisk i alle jobber
+  GIT_LFS_SKIP_SMUDGE: "1"
 
+cache:
+  key: pip-${CI_COMMIT_REF_SLUG}
+  paths:
+    - .cache/pip
+
+# ----------------------------
+# 1) Smoke test (CPU) - MANUAL
+# ----------------------------
 smoke_test:
   stage: test
+  image: python:3.11-slim
   tags:
     - xl-cloud-runner
-  script:
-    - pip install numpy nibabel pydicom SimpleITK torchio torch torchvision
-    - python -c "import torch; import torchio; import SimpleITK; import nibabel; import pydicom; print('Smoke test OK')"
-
-train_gpu:
-  stage: train
   rules:
     - when: manual
       allow_failure: true
+  before_script:
+    - python -V
+    - pip install --upgrade pip
+  script:
+    - pip install numpy nibabel pydicom SimpleITK torchio
+    - python -c "import torchio; import SimpleITK; import nibabel; import pydicom; print('Smoke test OK')"
+
+# ---------------------------------------
+# 2) GPU training - MANUAL + non-blocking
+# ---------------------------------------
+train_gpu:
+  stage: train
+  image: nvidia/cuda:13.0.0-devel-ubuntu22.04
   tags:
     - nvidia-a6000-2
+  rules:
+    - when: manual
+      allow_failure: true
+  before_script:
+    - apt-get update && apt-get install -y --no-install-recommends python3 python3-pip git git-lfs && rm -rf /var/lib/apt/lists/*
+    - python3 -V
+    - pip3 install --upgrade pip
+    # LFS: hent kun det vi faktisk trenger (dataset) i denne jobben
+    - git lfs install
+    - git lfs pull
   script:
-    - cd underDev2
-    - pip install -r requirements.txt
+    - pip3 install -r underDev2/requirements.txt
 
-    # --- DEBUG / sanity checks ---
-    - echo "Listing underDev2 (top level):"
-    - ls -lah . || true
-    - echo "Listing Data (top level):"
-    - ls -lah Data || true
-    - echo "Disk usage for Data:"
-    - du -sh Data || true
+    # sanity checks
+    - echo "Listing underDev2/Data (top level):"
+    - ls -lah underDev2 || true
+    - ls -lah underDev2/Data || true
+    - du -sh underDev2/Data || true
 
-    # --- Data must exist ---
-    - test -d Data || (echo "Missing underDev2/Data/ folder" && exit 1)
-    - test -d Data/Train || (echo "Missing underDev2/Data/Train" && exit 1)
-    - test -d Data/Test || (echo "Missing underDev2/Data/Test" && exit 1)
+    # Data must exist
+    - test -d underDev2/Data || (echo "Missing underDev2/Data/ folder" && exit 1)
+    - test -d underDev2/Data/Train || (echo "Missing underDev2/Data/Train" && exit 1)
+    - test -d underDev2/Data/Test || (echo "Missing underDev2/Data/Test" && exit 1)
 
-    # --- Run training ---
-    - python Resnet_classifier_test.py
+    # Run training
+    - python3 underDev2/Resnet_classifier_test.py
 
   artifacts:
     when: always
