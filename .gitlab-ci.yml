@@ -57,7 +57,7 @@ train_gpu:
     - test -d Data/Train || (echo "Missing underDev2/Data/Train" && exit 1)
     - test -d Data/Test || (echo "Missing underDev2/Data/Test" && exit 1)
 
-    - python Resnet_classifier_test.py
+    - python -u Resnet_classifier_test.py
 
   artifacts:
     when: always
