@@ -135,3 +135,11 @@ Før neste møte – onsdag 25/2
 Videre arbeid
 	• Etablere faste ukentlige møter på torsdager (avklare klokkeslett).
 	• Dokumentere arbeidet fortløpende på GitHub, slik at alle i prosjektet kan følge fremdriften i de ulike delene av arbeidet.
+
+
+Møte 19/2 (ukentlig sprint m/gruppa)
+	• Gå over til egne branch på github repoet.
+	• Setter opp kanban board for videre arbeid. 
+	• Sende mail til Trym: Digitale møter (har blitt gjort). 
+
+
