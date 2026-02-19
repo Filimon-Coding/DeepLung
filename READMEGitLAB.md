@@ -117,6 +117,11 @@ Modellvurdering
 	• Hvorvidt modellen er «bra» eller «ikke bra» er ikke det viktigste.
 	• Prosessen og metodikken bak arbeidet er det som har størst betydning.
 
+
+Frontend
+        • Viktig å ta dokumentere prosessen før utvikling av frontend-delen av webapplikasjonen 
+        ifm av f.eks. diagrammer/skisser o.l.
+
 ⸻
 
 Før neste møte – onsdag 25/2
