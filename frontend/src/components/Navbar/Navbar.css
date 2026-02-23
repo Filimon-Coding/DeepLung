@@ -13,10 +13,12 @@
 
   background: linear-gradient(90deg, #111827, #1f2937);
   box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+  box-sizing: border-box;
 }
 
 /* Logo */
 .logo {
+  flex-shrink: 0; /* Logo should not shrink */
   font-size: 1.4rem;
   font-weight: 700;
   text-decoration: none;
@@ -32,6 +34,12 @@
 .nav-links {
   display: flex;
   gap: 2rem;
+  
+  flex: 1;              /* Take remaining space */
+  justify-content: flex-end; /* Push links to the right */
+  min-width: 0;         /* Important: allow flex child to shrink */
+  flex-wrap: wrap;      /* Allow wrap on smaller laptop screens */
+  row-gap: 0.5rem;      /* Nice spacing if it wraps to a 2nd line */
 }
 
 /* Links */
@@ -39,8 +47,9 @@
   position: relative;
   text-decoration: none;
   font-weight: 500;
-  color: #c084fc; /* mykere lilla */
+  color: #c084fc; 
   transition: color 0.2s ease;
+  white-space: nowrap; /* If screen gets small, the links will be laid in 2 lines under each other instead of geting out of screen */
 }
 
 /* Hover */
@@ -71,4 +80,34 @@
 
 .nav-link.active::after {
   width: 100%;
+}
+
+/* Smaller laptop screens (not mobile) */
+@media (max-width: 1200px) {
+  .navbar {
+    padding: 1rem 1.5rem;
+  }
+
+  .nav-links {
+    gap: 1.2rem;
+  }
+
+  .nav-link {
+    font-size: 0.95rem;
+  }
+}
+
+/* Very small laptops */
+@media (max-width: 1000px) {
+  .nav-links {
+    gap: 1rem;
+  }
+
+  .nav-link {
+    font-size: 0.9rem;
+  }
+
+  .logo {
+    font-size: 1.2rem;
+  }
 }
