@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import "./HomePage.css";
+import WorkflowTimeline from "../components/WorkflowTimeline/WorkflowTimeline";
 
 /**
  * HomePage: Forklarer hvordan AI-modellen fungerer (ingen opplasting her).
@@ -52,6 +53,9 @@ function HomePage() {
             </p>
           </div>
         </div>
+
+         {/* Legg til timeline UNDER cards, uten å endre eksisterende UI */}
+        <WorkflowTimeline />
 
         <p className="disclaimer">
           Educational demo only — not a medical diagnosis tool.
