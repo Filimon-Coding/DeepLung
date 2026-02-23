@@ -111,3 +111,67 @@
     font-size: 1.2rem;
   }
 }
+
+/* Burger button hidden by default (large screens) */
+.burger {
+  display: none;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0.4rem;
+}
+
+.burger-line {
+  display: block;
+  width: 26px;
+  height: 2px;
+  background: white;
+  margin: 6px 0;
+}
+
+/* Dropdown menu styling */
+.dropdown {
+  position: absolute;
+  top: 70px;
+  right: 2rem;
+
+  background: #0f172a;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 0.75rem;
+
+  display: grid;
+  gap: 0.4rem;
+
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.25);
+  z-index: 1200;
+}
+
+.dropdown-link {
+  color: #d1d5db;
+  text-decoration: none;
+  padding: 0.6rem 0.8rem;
+  border-radius: 10px;
+  font-weight: 500;
+}
+
+.dropdown-link:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: white;
+}
+
+.dropdown-link.active {
+  background: rgba(34, 197, 94, 0.15);
+  color: white;
+}
+
+/* Collapse into burger on smaller laptop screens */
+@media (max-width: 1100px) {
+  .nav-links {
+    display: none;
+  }
+
+  .burger {
+    display: block;
+  }
+}
