@@ -11,7 +11,7 @@
 
 body {
   margin: 0;
-  padding-top: 80px; /* juster hvis navbar er høyere/lavere */
+  padding-top: 80px; /* juster hvis navbar er høyere/lavere, slik at innhold ikke havner bak navbar */
   background: #f8fbff;
   min-width: 320px;
   min-height: 100vh;
