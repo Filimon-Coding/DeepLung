@@ -1,7 +1,9 @@
 .navbar {
-  position: sticky;
-  top: 0;
-  z-index: 1000;
+  position: fixed; /* Gjør den fast */
+  top: 0; /* Navbar helt øverst på sidene */
+  left: 0;
+  width: 100%; /* full bredde */
+  z-index: 1000; /* Sørger for at den ligger over annet innhold */
 
   display: flex;
   justify-content: space-between;
