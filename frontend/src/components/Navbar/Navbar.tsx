@@ -1,6 +1,9 @@
 import { useState } from "react";
 import { NavLink } from "react-router-dom";
 import "./Navbar.css";
+import { useTheme } from "../../hooks/useTheme";
+import ThemeToggle from "../ThemeToggle/ThemeToggle";
+import "../ThemeToggle/ThemeToggle.css";
 
 /**
  * Navbar component
@@ -11,6 +14,9 @@ import "./Navbar.css";
 function Navbar() {
   // Controls the dropdown menu visibility on smaller screens
   const [menuOpen, setMenuOpen] = useState<boolean>(false);
+
+  // Theme state + toggler (light/dark)
+  const { theme, toggleTheme } = useTheme();
 
   // Close dropdown when a navigation link is clicked
   const closeMenu = () => setMenuOpen(false);
@@ -55,6 +61,9 @@ function Navbar() {
         >
           Login
         </NavLink>
+
+        {/* Theme toggle button (desktop) */}
+        <ThemeToggle theme={theme} onToggle={toggleTheme} />
       </div>
 
       {/* Burger button (shown on smaller screens via CSS) */}
@@ -112,6 +121,9 @@ function Navbar() {
           >
             Login
           </NavLink>
+
+          {/* Theme toggle button (dropdown) */}
+          <ThemeToggle theme={theme} onToggle={toggleTheme} />
         </div>
       )}
     </nav>

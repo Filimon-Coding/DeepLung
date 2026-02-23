@@ -1,3 +1,4 @@
+/* Default font settings */
 :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
@@ -7,12 +8,34 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
+  /* LIGHT MODE VARIABLES (default) */
+  --bg: #f8fbff;
+  --surface: #ffffff;
+  --text: #111827;
+  --muted: #6b7280;
+  --border: rgba(17, 24, 39, 0.08);
+  --shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
+}
+
+/* DARK MODE VARIABLES */
+:root[data-theme="dark"] {
+  --bg: #0b1220;
+  --surface: #0f172a;
+  --text: #e5e7eb;
+  --muted: #9ca3af;
+  --border: rgba(255, 255, 255, 0.08);
+  --shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
 }
 
 body {
   margin: 0;
-  padding-top: 80px; /* juster hvis navbar er høyere/lavere, slik at innhold ikke havner bak navbar */
-  background: #f8fbff;
+  padding-top: 80px;
   min-width: 320px;
   min-height: 100vh;
+
+  background: var(--bg);
+  color: var(--text);
+
+  transition: background 0.25s ease, color 0.25s ease;
 }
