@@ -143,3 +143,37 @@ Møte 19/2 (ukentlig sprint m/gruppa)
 	• Sende mail til Trym: Digitale møter (har blitt gjort). 
 
 
+Møte med internveileder – Onsdag 25.02
+Dokumentasjon og rapport
+	• Vi må føre løpende notater om hva vi gjør, hvordan vi gjør det og hvorfor vi gjør det.
+Dette skal fungere som en prosjektlogg og gjøre det enklere å skrive bachelorrapporten senere.
+	• Fokus fremover:
+		○ Fullføre prosjektet
+		○ Dokumentere hele prosessen grundig
+		○ Sørge for systematisk loggføring av valg og endringer
+	• Det er bachelorrapporten som danner grunnlaget for karakteren i emnet.
+Prosess, refleksjon og metode er derfor like viktig som selve sluttproduktet.
+
+Utviklingsmetodikk
+	• Vi må sikre at vi følger en tydelig utviklingsmetodikk.
+	• Det må være samsvar mellom:
+		○ Det vi beskriver i rapporten
+		○ Det vi faktisk gjennomfører i prosjektet
+	• Metodiske valg må begrunnes og dokumenteres underveis.
+
+Systemintegrasjon og arkitektur
+	• Vi må avklare hvordan AI-modellen skal interfaces (inference) med frontend- og backend-delen.
+	• Når alle komponentene kobles sammen, skal vi bruke skolens server.
+	• Vi må sette oss inn i hvordan hele systemet skal interagere:
+		○ Hvordan data sendes fra frontend til backend
+		○ Hvordan inferens kjøres på modellen
+		○ Hvordan resultatet returneres til brukeren
+		○ Hvordan sikkerhet og databehandling håndteres
+
+Personvern (Privacy)
+	• I bachelorrapporten bør vi inkludere en refleksjon rundt personvern.
+	• For å ivareta privacy i et reelt bruksområde bør brukeren ideelt sett ha tilgang til egen GPU, slik at sensitive data ikke sendes til en ekstern server.
+
+Ressurser
+	• Hver av oss i gruppen har 50 timer GitLab-tilgang per måned.
+	• Dersom dette ikke er tilstrekkelig, kan vi kontakte Hedda for å be om økt tilgang.
