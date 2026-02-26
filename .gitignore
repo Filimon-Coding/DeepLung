@@ -34,3 +34,23 @@ underDev2/Data/*
 
 
 nifti_output_python
+
+# Temporary / large artifacts
+backend2/
+
+# Large ML/data files (anywhere)
+*.pth
+*.pt
+*.ckpt
+*.zip
+*.tar
+*.tar.gz
+*.7z
+*.nii
+*.nii.gz
+*.dcm
+
+# ML artifacts folders
+checkpoints/
+Data/
+datasets/
