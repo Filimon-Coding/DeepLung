@@ -10,11 +10,7 @@
   padding: 2rem 1.25rem;
   border-radius: 16px;
   
-  background: linear-gradient(
-    180deg,
-    rgba(37, 99, 235, 0.05),
-    rgba(37, 99, 235, 0.02)
-  );
+  background: var(--surface);
   
   border: 1px solid var(--border);
   box-shadow: var(--shadow);
@@ -31,7 +27,7 @@
   line-height: 1.6;
   font-size: 1.05rem;
 
-  color: var(--muted);
+  color: var(--text-secondary);
 }
 
 /* CTA button */
@@ -91,6 +87,8 @@
   border: 1px solid var(--border);
   background: var(--surface);
   box-shadow: var(--shadow);
+
+  color: var(--text-secondary);
 }
 
 .card-step {

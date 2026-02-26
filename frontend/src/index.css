@@ -13,9 +13,16 @@
   --bg: #f8fbff;
   --surface: #ffffff;
   --text: #111827;
-  --muted: #6b7280;
   --border: rgba(17, 24, 39, 0.08);
   --shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
+
+  /* Text hierarchy */
+  --text-secondary: #4b5563; /* stronger than muted */
+  --muted: #6b7280;          /* current muted */
+  --text-muted: #9ca3af;     /* lightest */
+
+  --error: #dc2626;          /* strong red */
+  --error-bg: #fee2e2;       /* soft red background */
 }
 
 /* DARK MODE VARIABLES */
@@ -23,9 +30,16 @@
   --bg: #0b1220;
   --surface: #0f172a;
   --text: #e5e7eb;
-  --muted: #9ca3af;
   --border: rgba(255, 255, 255, 0.08);
   --shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
+
+    /* Text hierarchy */
+  --text-secondary: #cbd5e1; /* clearer in dark mode */
+  --muted: #9ca3af;          /* current muted */
+  --text-muted: #94a3b8;     /* slightly clearer than muted */
+
+  --error: #f87171;          /* lighter red for dark */
+  --error-bg: rgba(248, 113, 113, 0.1);
 }
 
 body {

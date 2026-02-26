@@ -1,22 +1,30 @@
 import React, { useState } from "react";
 import "./DragAndDrop.css";
 
-/**
- * DragAndDrop-komponenten håndterer opplastning av filer
- * ved hjelp av HTML5 Drag & Drop API.
- * Komponenten gir visuell feedback når en fil dras over området.
- */
-export default function DragAndDrop() {
-
+type DragAndDropProps = {
   /**
-   * isActive brukes til å indikere om brukeren 
-   * holder en fil over drop-sonen (vises visuelt som grønn kant)
+   * Callback fired when the user drops a file into the drop zone.
+   * The parent component (AnalyzePage) can store the file in state.
+   */
+  onFileSelected: (file: File) => void;
+};
+
+/**
+ * DragAndDrop
+ *
+ * Handles file upload using the HTML5 Drag & Drop API.
+ * Provides visual feedback when a file is dragged over the drop area.
+ */
+export default function DragAndDrop({ onFileSelected }: DragAndDropProps) {
+  /**
+   * Indicates whether the user is currently dragging a file over the drop zone
+   * (used to toggle visual feedback like a green border).
    */
   const [isActive, setIsActive] = useState<boolean>(false);
 
   /**
-   * Hjelpefunksjon som forhindrer nettleserens standard drag & drop-oppførsel
-   * og stopper event-bubbling
+   * Helper function that prevents the browser's default drag & drop behavior
+   * and stops event bubbling.
    */
   const prevent = (e: React.DragEvent<HTMLDivElement>): void => {
     e.preventDefault();
@@ -24,8 +32,8 @@ export default function DragAndDrop() {
   };
 
   /**
-   * Trigges når en fil kommer inn i drop-sonen. 
-   * Aktiverer visuell feedback.
+   * Fired when a file enters the drop zone.
+   * Enables visual feedback.
    */
   const handleDragEnter = (e: React.DragEvent<HTMLDivElement>): void => {
     prevent(e);
@@ -33,8 +41,8 @@ export default function DragAndDrop() {
   };
 
   /**
-   * Trigges kontinuerlig mens filen holdes over drop-sonen.
-   * Må ha preventDefault for at drop skal fungere.
+   * Fired continuously while the file is over the drop zone.
+   * Must call preventDefault for the drop event to work.
    */
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>): void => {
     prevent(e);
@@ -42,8 +50,8 @@ export default function DragAndDrop() {
   };
 
   /**
-   * Trigges når filen forlater drop-sonen uten å bli sluppet.
-   * Fjerner visuell feedback.
+   * Fired when the file leaves the drop zone without being dropped.
+   * Disables visual feedback.
    */
   const handleDragLeave = (e: React.DragEvent<HTMLDivElement>): void => {
     prevent(e);
@@ -51,31 +59,26 @@ export default function DragAndDrop() {
   };
 
   /**
-   * Trigges når brukeren slipper filen i drop-sonen.
-   * Her hentes filene fra DataTransfer-objektet.
-   * 
+   * Fired when the user drops the file in the drop zone.
+   * Extracts the first file and passes it to the parent via onFileSelected.
    */
   const handleDrop = (e: React.DragEvent<HTMLDivElement>): void => {
     prevent(e);
     setIsActive(false);
 
-    // Henter filer fra drag-eventen
+    // Extract files from the drop event
     const files: FileList | null = e.dataTransfer?.files ?? null;
 
-    console.log("Dropped files:", files);
+    // Only proceed if at least one file was dropped
+    if (!files || files.length === 0) return;
 
-    //Eksempel: logger navnet på første fil 
-    if (files && files.length > 0) {
-      console.log("First file name:", files[0].name);
-    }
+    const file = files[0];
+
+    // Pass the file to the parent (AnalyzePage)
+    onFileSelected(file);
   };
 
   return (
-    /**
-     * droparea er selve drop-sonen.
-     * Klassen "green-border" legges til dynamisk
-     * når isActive er true.
-     */
     <div
       className={`droparea ${isActive ? "green-border" : ""}`}
       onDragEnter={handleDragEnter}
@@ -83,7 +86,6 @@ export default function DragAndDrop() {
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
     >
-      {/* Instruksjonstekst til brukeren */}
       <p className="drop-title">Drag & drop file here</p>
       <p className="drop-subtitle">No max file size</p>
     </div>
