@@ -19,7 +19,7 @@
 
 /* Card-stil */
 .card {
-  background: #fff;
+  background: var(--surface);
   border: 1px solid #eee;
   border-radius: 14px;
   padding: 1.25rem;
@@ -64,4 +64,27 @@
   font-size: 0.85rem;
   color: #777;
   text-align: center;
+}
+
+.image-preview {
+  margin-top: 1.5rem;
+  text-align: center;
+}
+
+.image-preview img {
+  max-width: 100%;
+  max-height: 350px;
+  border-radius: 12px;
+  border: 1px solid #ddd;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+}
+
+.error-text {
+  margin-top: 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+
+  color: var(--error);
+  background: var(--error-bg);
+  border: 1px solid var(--error);
 }
