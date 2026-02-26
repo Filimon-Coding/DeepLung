@@ -89,8 +89,8 @@ function AnalyzePage() {
         {/* Analyze Button moved inside upload card */}
         <div className="analyze-button-row">
           <AnalyzeButton
-            disabled={!selectedFile || isLoading}
-            label={isLoading ? "Analyzing..." : "Analyze Image"}
+            disabled={!selectedFile}
+            isLoading={isLoading}
             onClick={handleAnalyze}
           />
         </div>
