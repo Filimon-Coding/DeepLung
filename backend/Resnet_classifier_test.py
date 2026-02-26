@@ -28,6 +28,7 @@ LATEST_MODEL_PATH = MODEL_DIR / "resnet3d_latest.pth"
 
 
 
+'''
 
 def create_short_dataset(file_list, target_count=100):
     counts = {"Malignancy": 0, "Benign": 0}
@@ -63,7 +64,7 @@ if not DATA_DIR.exists():
     create_short_dataset(all_files, target_count=100)
 else:
     print(f"--- Folder '{DATA_DIR}' already exists. Skipping sorting. ---")
-
+'''
 ############################################
 # DATASET & LOADERS
 ############################################
@@ -263,3 +264,97 @@ for epoch in range(num_epochs):
     }, LATEST_MODEL_PATH)
 
 print(f"\n--- Training Complete. Best Test Accuracy: {best_accuracy:.2f}% ---")
+
+import matplotlib.pyplot as plt # New Import
+
+# ... (Previous imports and Model definitions remain the same) ...
+
+############################################
+# TRAINING SETUP
+############################################
+
+# [...] (Keep your device, model, criterion, and optimizer setup)
+
+# Lists to store metrics for plotting
+history = {
+    'train_loss': [],
+    'train_acc': [],
+    'test_loss': [],
+    'test_acc': []
+}
+
+for epoch in range(num_epochs):
+    # --- TRAINING PHASE ---
+    model.train()
+    total_loss, correct, total = 0, 0, 0
+    
+    for i, (images, labels) in enumerate(train_loader):
+        images, labels = images.to(device), labels.to(device)
+        
+        optimizer.zero_grad()
+        outputs = model(images)
+        loss = criterion(outputs, labels)
+        loss.backward()
+        optimizer.step()
+        
+        preds = outputs.argmax(dim=1)
+        correct += (preds == labels).sum().item()
+        total += labels.size(0)
+        total_loss += loss.item()
+
+    avg_train_loss = total_loss / len(train_loader)
+    train_accuracy = 100 * correct / total
+    
+    # --- EVALUATION PHASE ---
+    model.eval()
+    val_loss, val_correct, val_total = 0, 0, 0
+    with torch.no_grad():
+        for images, labels in test_loader:
+            images, labels = images.to(device), labels.to(device)
+            outputs = model(images)
+            loss = criterion(outputs, labels) # Calculate val loss
+            
+            val_loss += loss.item()
+            preds = outputs.argmax(dim=1)
+            val_correct += (preds == labels).sum().item()
+            val_total += labels.size(0)
+
+    avg_val_loss = val_loss / len(test_loader) if len(test_loader) > 0 else 0
+    val_accuracy = 100 * val_correct / val_total if val_total > 0 else 0
+
+    # Store metrics in history
+    history['train_loss'].append(avg_train_loss)
+    history['train_acc'].append(train_accuracy)
+    history['test_loss'].append(avg_val_loss)
+    history['test_acc'].append(val_accuracy)
+
+    print(f"Epoch {epoch+1} | Train Loss: {avg_train_loss:.4f} | Test Loss: {avg_val_loss:.4f} | Test Acc: {val_accuracy:.2f}%")
+
+def plot_metrics(history):
+    epochs = range(1, len(history['train_loss']) + 1)
+    
+    plt.figure(figsize=(12, 5))
+
+    # Plot Loss
+    plt.subplot(1, 2, 1)
+    plt.plot(epochs, history['train_loss'], 'bo-', label='Training Loss')
+    plt.plot(epochs, history['test_loss'], 'ro-', label='Test Loss')
+    plt.title('Training and Test Loss')
+    plt.xlabel('Epochs')
+    plt.ylabel('Loss')
+    plt.legend()
+
+    # Plot Accuracy
+    plt.subplot(1, 2, 2)
+    plt.plot(epochs, history['train_acc'], 'bo-', label='Training Acc')
+    plt.plot(epochs, history['test_acc'], 'ro-', label='Test Acc')
+    plt.title('Training and Test Accuracy')
+    plt.xlabel('Epochs')
+    plt.ylabel('Accuracy (%)')
+    plt.legend()
+
+    plt.tight_layout()
+    plt.savefig(MODEL_DIR / "training_curves.png")
+    plt.show()
+
+plot_metrics(history)
