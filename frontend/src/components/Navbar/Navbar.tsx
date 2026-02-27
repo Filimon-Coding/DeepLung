@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { NavLink } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { NavLink, useNavigate } from "react-router-dom";
 import "./Navbar.css";
 import { useTheme } from "../../hooks/useTheme";
 import ThemeToggle from "../ThemeToggle/ThemeToggle";
@@ -15,11 +15,31 @@ function Navbar() {
   // Controls the dropdown menu visibility on smaller screens
   const [menuOpen, setMenuOpen] = useState<boolean>(false);
 
+  // Logged-in user display (email prefix)
+  const [userDisplay, setUserDisplay] = useState<string | null>(null);
+
   // Theme state + toggler (light/dark)
   const { theme, toggleTheme } = useTheme();
 
+  const navigate = useNavigate();
+
   // Close dropdown when a navigation link is clicked
   const closeMenu = () => setMenuOpen(false);
+
+  // Read email from localStorage
+  useEffect(() => {
+    const email = localStorage.getItem("email");
+    if (email) setUserDisplay(email.split("@")[0]);
+    else setUserDisplay(null);
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem("email");
+    localStorage.removeItem("role");
+    setUserDisplay(null);
+    closeMenu();
+    navigate("/");
+  };
 
   return (
     <nav className="navbar">
@@ -33,7 +53,9 @@ function Navbar() {
         <NavLink
           to="/"
           onClick={closeMenu}
-          className={({ isActive }) => (isActive ? "nav-link active" : "nav-link")}
+          className={({ isActive }) =>
+            isActive ? "nav-link active" : "nav-link"
+          }
         >
           Home
         </NavLink>
@@ -41,7 +63,9 @@ function Navbar() {
         <NavLink
           to="/analyze"
           onClick={closeMenu}
-          className={({ isActive }) => (isActive ? "nav-link active" : "nav-link")}
+          className={({ isActive }) =>
+            isActive ? "nav-link active" : "nav-link"
+          }
         >
           Analyze
         </NavLink>
@@ -49,18 +73,34 @@ function Navbar() {
         <NavLink
           to="/results"
           onClick={closeMenu}
-          className={({ isActive }) => (isActive ? "nav-link active" : "nav-link")}
+          className={({ isActive }) =>
+            isActive ? "nav-link active" : "nav-link"
+          }
         >
           Results
         </NavLink>
 
-        <NavLink
-          to="/login"
-          onClick={closeMenu}
-          className={({ isActive }) => (isActive ? "nav-link active" : "nav-link")}
-        >
-          Login
-        </NavLink>
+        {/* Login vs user */}
+        {userDisplay ? (
+          <>
+            <span className="nav-user">
+              Signed in as <strong>{userDisplay}</strong>
+            </span>
+            <button type="button" className="logout-btn" onClick={handleLogout}>
+              Logout
+            </button>
+          </>
+        ) : (
+          <NavLink
+            to="/login"
+            onClick={closeMenu}
+            className={({ isActive }) =>
+              isActive ? "nav-link active" : "nav-link"
+            }
+          >
+            Login
+          </NavLink>
+        )}
 
         {/* Theme toggle button (desktop) */}
         <ThemeToggle theme={theme} onToggle={toggleTheme} />
@@ -112,15 +152,31 @@ function Navbar() {
             Results
           </NavLink>
 
-          <NavLink
-            to="/login"
-            onClick={closeMenu}
-            className={({ isActive }) =>
-              isActive ? "dropdown-link active" : "dropdown-link"
-            }
-          >
-            Login
-          </NavLink>
+          {/* Login vs user (dropdown) */}
+          {userDisplay ? (
+            <>
+              <div className="dropdown-user">
+                Signed in as <strong>{userDisplay}</strong>
+              </div>
+              <button
+                type="button"
+                className="dropdown-logout"
+                onClick={handleLogout}
+              >
+                Logout
+              </button>
+            </>
+          ) : (
+            <NavLink
+              to="/login"
+              onClick={closeMenu}
+              className={({ isActive }) =>
+                isActive ? "dropdown-link active" : "dropdown-link"
+              }
+            >
+              Login
+            </NavLink>
+          )}
 
           {/* Theme toggle button (dropdown) */}
           <ThemeToggle theme={theme} onToggle={toggleTheme} />

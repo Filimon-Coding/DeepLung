@@ -82,6 +82,27 @@
   width: 100%;
 }
 
+.nav-user {
+  margin-left: 1rem;
+  color: #4ade80;
+  font-weight: 500;
+}
+
+.logout-btn {
+  margin-left: 1rem;
+  background: transparent;
+  border: 1px solid #4ade80;
+  color: #4ade80;
+  padding: 0.4rem 0.8rem;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.logout-btn:hover {
+  background: #4ade80;
+  color: #111827;
+}
+
 /* Smaller laptop screens (not mobile) */
 @media (max-width: 1200px) {
   .navbar {

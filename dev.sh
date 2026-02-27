@@ -20,11 +20,14 @@ fi
 # Activate venv
 source venv/bin/activate
 
-# Install requirements
-pip install -r requirements.txt
+# Upgrade pip (helps avoid weird install issues)
+python -m pip install --upgrade pip
 
-# Start backend in background
-uvicorn app.main:app --reload --host 127.0.0.1 --port 8000 &
+# Install requirements
+python -m pip install -r requirements.txt
+
+# Start backend in background (use python -m uvicorn to ensure correct venv)
+python -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8000 &
 BACKEND_PID=$!
 
 # ---- Frontend ----
@@ -36,9 +39,13 @@ if [ ! -d "node_modules" ]; then
   npm install
 fi
 
+# Stop backend when script exits (even if you Ctrl+C)
+cleanup() {
+  echo ""
+  echo "Stopping backend..."
+  kill $BACKEND_PID 2>/dev/null || true
+}
+trap cleanup EXIT
+
 # Start frontend (foreground)
 npm run dev
-
-# If frontend stops, stop backend too
-echo "Stopping backend..."
-kill $BACKEND_PID

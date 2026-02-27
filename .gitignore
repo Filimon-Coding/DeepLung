@@ -54,3 +54,12 @@ backend2/
 checkpoints/
 Data/
 datasets/
+
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+backend/venv/
