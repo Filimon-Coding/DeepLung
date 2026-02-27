@@ -1,25 +1,54 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { loginUser } from "../api/auth";
 import "./Auth.css";
 
 /**
- * LoginPage (mock)
- * - Ingen AuthContext / backend ennå
- * - Navigerer bare videre til /analyze når feltene ikke er tomme
+ * LoginPage
+ * - Calls FastAPI POST /api/login
+ * - Stores returned role/email in localStorage (demo solution)
+ * - Navigates to /analyze on success
  */
 function LoginPage() {
   const navigate = useNavigate();
 
+  // Form state
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // UI state
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrorMsg(null);
 
-    if (!email || !password) return;
+    // Basic validation
+    if (!email.trim() || !password.trim()) {
+      setErrorMsg("Please enter email and password.");
+      return;
+    }
 
-    // Mock login: bare gå videre
-    navigate("/analyze");
+    try {
+      setIsLoading(true);
+
+      // Call backend (expects: { email, role })
+      const result = await loginUser(email, password);
+
+      // Store user info temporarily (until you add real auth/JWT)
+      localStorage.setItem("email", result.email);
+      localStorage.setItem("role", result.role);
+
+      // Force refresh after login so Navbar updates
+      window.location.href = "/analyze";
+
+    } catch (err) {
+      console.error("Login error:", err);
+      setErrorMsg(err instanceof Error ? err.message : "Login failed.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -29,28 +58,35 @@ function LoginPage() {
         <p className="auth-subtitle">Sign in to access Analyze and Results.</p>
 
         <form className="auth-form" onSubmit={handleSubmit}>
-          <label>
+          <label className="auth-label">
             Email
             <input
+              className="auth-input"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="name@domain.com"
+              placeholder="admin@crai.com"
+              autoComplete="email"
             />
           </label>
 
-          <label>
+          <label className="auth-label">
             Password
             <input
+              className="auth-input"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
+              placeholder="test123"
+              autoComplete="current-password"
             />
           </label>
 
-          <button className="auth-button" type="submit">
-            Sign in
+          {/* Error message from failed login */}
+          {errorMsg && <p className="auth-error">{errorMsg}</p>}
+
+          <button className="auth-button" type="submit" disabled={isLoading}>
+            {isLoading ? "Signing in..." : "Sign in"}
           </button>
         </form>
 

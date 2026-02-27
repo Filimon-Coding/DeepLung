@@ -1,7 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
-from app.api.routes import router
+from app.api.routes import api_router
 
 app = FastAPI(title="CRAI Backend", version="0.1.0")
 
@@ -19,10 +18,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Include API routes
-app.include_router(router)
+# Include API routes (everything under /api)
+app.include_router(api_router, prefix="/api")
 
 
-@app.get("/health")
-def health():
-    return {"status": "ok"}
+@app.get("/")
+def root():
+    return {"message": "CRAI backend is running"}

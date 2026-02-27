@@ -1,9 +1,13 @@
 from fastapi import APIRouter, UploadFile, File, HTTPException
+from .auth import router as auth_router
 
-router = APIRouter(prefix="/api")
+# This is the single API router that main.py includes with prefix="/api"
+api_router = APIRouter()
 
+# Include auth routes (e.g., POST /login)
+api_router.include_router(auth_router)
 
-@router.post("/analyze")
+@api_router.post("/analyze")
 async def analyze_image(file: UploadFile = File(...)):
     # Basic validation
     if not file.content_type or not file.content_type.startswith("image/"):
