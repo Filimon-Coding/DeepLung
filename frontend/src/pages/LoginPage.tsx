@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { loginUser } from "../api/auth";
 import "./Auth.css";
 
@@ -7,10 +7,8 @@ import "./Auth.css";
  * LoginPage
  * - Calls FastAPI POST /api/login
  * - Stores returned role/email in localStorage (demo solution)
- * - Navigates to /analyze on success
  */
 function LoginPage() {
-  const navigate = useNavigate();
 
   // Form state
   const [email, setEmail] = useState<string>("");
