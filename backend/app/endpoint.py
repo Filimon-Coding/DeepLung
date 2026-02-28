@@ -2,12 +2,12 @@ from fastapi import APIRouter, HTTPException, Depends, UploadFile, File
 from sqlmodel import Session
 
 from .request import LoginRequest, LoginResponse, AnalyzeResponse
-from .data.db import get_session
-from .data.crud import authenticate
+from .database.db import get_session
+from .database.crud import authenticate
 
 from .request import RegisterRequest, RegisterResponse
-from .data.models import User
-from .data.security import hash_password
+from .database.models import User
+from .database.security import hash_password
 from sqlmodel import select
 
 router = APIRouter()

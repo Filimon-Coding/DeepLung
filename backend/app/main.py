@@ -3,9 +3,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlmodel import Session, select
 
 from .router import router as api_router
-from .data.db import create_db_and_tables, engine
-from .data.models import User  # <- sørg for at denne finnes
-from .data.security import hash_password  # <- hvis du hasher passord (anbefalt)
+from .database.db import create_db_and_tables, engine
+from .database.models import User  # <- sørg for at denne finnes
+from .database.security import hash_password  # <- hvis du hasher passord (anbefalt)
 
 app = FastAPI(title="CRAI Backend", version="0.1.0")
 
