@@ -1,5 +1,15 @@
 from pydantic import BaseModel, EmailStr
 
+class RegisterRequest(BaseModel):
+    email: str
+    password: str
+    confirm_password: str
+    role: str = "doctor"  # default
+    
+class RegisterResponse(BaseModel):
+    email: str
+    role: str
+    
 class LoginRequest(BaseModel):
     email: str
     password: str
