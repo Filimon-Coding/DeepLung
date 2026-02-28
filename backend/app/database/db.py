@@ -1,10 +1,15 @@
+from pathlib import Path
 from sqlmodel import SQLModel, Session, create_engine
 
-DATABASE_URL = "sqlite:///./crai.db"
+# Absolute path to backend/ (because this file is backend/app/database/db.py)
+BASE_DIR = Path(__file__).resolve().parents[2]  # -> backend/
+DB_PATH = (BASE_DIR / "crai.db").resolve()
+
+DATABASE_URL = f"sqlite:///{DB_PATH}"
 
 engine = create_engine(
     DATABASE_URL,
-    connect_args={"check_same_thread": False}
+    connect_args={"check_same_thread": False},
 )
 
 def create_db_and_tables():

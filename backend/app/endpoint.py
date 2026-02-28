@@ -1,50 +1,31 @@
 from fastapi import APIRouter, HTTPException, Depends, UploadFile, File
 from sqlmodel import Session
 
-from .request import LoginRequest, LoginResponse, AnalyzeResponse
-from .database.db import get_session
-from .database.crud import authenticate
+from .request import (
+    LoginRequest, LoginResponse,
+    RegisterRequest, RegisterResponse,
+    AnalyzeResponse
+)
 
-from .request import RegisterRequest, RegisterResponse
-from .database.models import User
-from .database.security import hash_password
-from sqlmodel import select
+from .database.db import get_session
+from .database.crud import authenticate, create_user
 
 router = APIRouter()
 
 @router.post("/register", response_model=RegisterResponse)
 def register(data: RegisterRequest, session: Session = Depends(get_session)):
-
-    # Validate password
     if data.password != data.confirm_password:
         raise HTTPException(status_code=400, detail="Passwords do not match")
 
-    # Checks if user exits
-    existing = session.exec(
-        select(User).where(User.email == data.email)
-    ).first()
-
-    if existing:
-        raise HTTPException(status_code=400, detail="User already exists")
-
-    # Create user
-    user = User(
-        email=data.email,
-        role=data.role,
-        hashed_password=hash_password(data.password),
-    )
-
-    session.add(user)
-    session.commit()
-    session.refresh(user)
-
+    user = create_user(session, email=data.email, password=data.password, role=data.role)
     return {"email": user.email, "role": user.role}
 
 @router.post("/login", response_model=LoginResponse)
 def login(data: LoginRequest, session: Session = Depends(get_session)):
-    user = authenticate(session, data.email, data.password)
 
-    if not user:
+    user = authenticate(session, data.email)
+
+    if not user or user.password != data.password:
         raise HTTPException(status_code=401, detail="Invalid credentials")
 
     return {"email": user.email, "role": user.role}

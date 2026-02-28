@@ -31,8 +31,6 @@ dist-ssr
 # Dataset
 rsna-pneumonia-detection-challenge.zip
 
-
-
 .venv
 underDev/pylidc/*
 underDev2/Data/*

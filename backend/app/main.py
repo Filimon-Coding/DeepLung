@@ -4,8 +4,7 @@ from sqlmodel import Session, select
 
 from .router import router as api_router
 from .database.db import create_db_and_tables, engine
-from .database.models import User  # <- sørg for at denne finnes
-from .database.security import hash_password  # <- hvis du hasher passord (anbefalt)
+from .database.models import User
 
 app = FastAPI(title="CRAI Backend", version="0.1.0")
 
@@ -39,7 +38,7 @@ def seed_users():
             user = User(
                 email=u["email"],
                 role=u["role"],
-                hashed_password=hash_password(u["password"]),  # eller password=u["password"] hvis demo
+                password=u["password"],
             )
             session.add(user)
 
