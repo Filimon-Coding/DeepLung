@@ -4,7 +4,7 @@ export default function MyNavLink({ to, label }: { to: string; label: string }) 
   return (
     <NavLink
       to={to}
-      className={({ isActive }) =>
+      className={({ isActive }: { isActive: boolean }) =>
         [
           "text-sm font-semibold tracking-wide",
           isActive ? "underline underline-offset-8" : "hover:opacity-70",

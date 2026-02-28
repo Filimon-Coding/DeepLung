@@ -1,12 +1,15 @@
-import { useState } from "react";
-import { Input } from "../components/ui/input";
-import { Button } from "../components/ui/button";
-import { Checkbox } from "../components/ui/checkbox";
-import { Select, SelectItem } from "../components/ui/select";
-
+// ...existing code...
+import { Input } from "../../ui/innput";
+import { Button } from "../../ui/button";
+import { Checkbox } from "../../ui/checkbox";
+import { Select, SelectItem } from "../../ui/select";
+// replace the named import with an alias
+import { useState as useReactState } from "react";
+// ...existing code...
 export default function Login() {
-  const [agreed, setAgreed] = useState(false);
-  const [country, setCountry] = useState("");
+  const [agreed, setAgreed] = useReactState(false);
+  const [country, setCountry] = useReactState("");
+// ...existing code...
 
   return (
     <div className="min-h-screen bg-white flex flex-col items-center justify-center px-6">
@@ -58,4 +61,8 @@ export default function Login() {
       </div>
     </div>
   );
+}
+
+function useState(arg0: string): [any, any] {
+  throw new Error("Function not implemented.");
 }

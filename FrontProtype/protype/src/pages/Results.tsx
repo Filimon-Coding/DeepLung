@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import Layout from "../components/Layout";
-import { Button } from "../components/ui/button";
+import { Button } from "../../ui/button";
 import { useAnalysis } from "../state/analysis-context";
 
 export default function Results() {
