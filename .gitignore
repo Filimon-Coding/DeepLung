@@ -28,7 +28,6 @@ rsna-pneumonia-detection-challenge.zip
 
 
 
-.venv
 underDev/pylidc/*
 # underDev2/Data/*
 underDev2/Data/*
