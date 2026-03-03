@@ -1,93 +1,66 @@
-# Bachelor-CRAI-GitLab
+Bachelor-CRAI
+Vi diskutere og kom fram til vi skal bruke datasette fra The Cancer Imaging Archives(TCIA) link: https://www.cancerimagingarchive.net/collection/lidc-idri/ -- System utvikiling : utvikle model dere tenke å bruke --> som eks. Brukerhistorie. --> Github projekter. : Kanskje ikke bruke github actions
+
+--> Dagbok AI lab
+
+--> Hedda marie westlin : Ansvarlig for de Pc for treningsmodell. Kontakt
+
+-- Du tok feil anngående penumine sidene : Ja. finne faktisk bilde av kreft. --> Se om du kan trene dem og så teste med dems data hos CRAI sin data.
+
+-- > prøve finn hva som finnes der ute og han en litturate om lunge kreft som ble gjørt -- > Snakke om Accurcy -- > Tenke om Klient ha GPU eller CPU : Så om den modell fungere der bedre og.. osv . -- >
+
+MVP : -- Hva minimal valible produkt :
+
+hva kan vi utføre! Så skrive ned det.
+
+Onsdagen 15:30 neste møte ::
+
+notatene fra møtet med Trym i går (21/1): Mvp - snakke med ekstern veileder om hva de tenker? Lage noe som de faktisk er ute etter. Intervjuer med brukere når det kommer til dette. lage risikoanalyse (putte i risikoanalyse: problem med å finne data). datasett -> bruke chatgpt (gjøre bredt søk i starten), legge punkter på hva vi er ute etter. Deep research på GPT (trykke på + og gjøre Deep research). Verifisere etterpå om det faktisk er det vi ute etter. Bra for å undersøke hvilke modeller som finnes. Snakke med ekstern om å teste data der? og om de har ressurser til å trene modellene våres? Kan fortsatt bruke datasett med annen data enn av lungesvulst, fordi da lærer modellen seg å gjenkjenne hva som er lungekreft og hva som er de andre tingene. Bare sjekk hvor mange label det er av lungekreft - og bør ha balansert labels av dataene. Se på lisensen på data hvis det feks ligger på github - om tillatelse til å bruke data. Sjekke lisenser - og skrive om i rapporten også under risikoanalyse. Legge til filter i Kaggle ved søk (Image Classification): https://www.kaggle.com/datasets?search=Lung+cancer&tags=16686-Image+Classification Tips ved søk: Bruke logikk som f.eks. AND ved google søk. Se på phd-avhandling av automatic detection and classification of lung cancer.. (den har litteratur i bio også, se datasett s.63), link:
+
+Neste møte 4/2 Onsdag 15.30.
+
+Ml ops oppsettet - ML flow brukes til sånn type tracking (tracking av parametre)
+
+Klassifisering (gjennom heatmap)
+
+Utdype noen punkter i forprosjektrapporten: som Hvordan frontend skal se ut. Ta med risikoanalyse i forprosjektrapporten (sannsynlighet, konsekvens og håndtering)
+
+Ha noen brukerhistorier: hva slags metrix de er ute etter? - hva som gjør at de stoler på dette systemet? Se på Trustworthyness av AI (passe på at treningsdataet faktisk blir på selve lungene og ikke noe rundt). - Dette kommer fint fram gjennom heathmap metoder.
+
+Tenke på hva som kan gjøres i parallell for å klare å komme i mål. Jobbe med applikasjonsframeworket (frontend) samtidig som datasettet /litteraturstudie. Begynne å tenke på design av pipeline allerede nå. Referere det tilbake til emnet vi har hatt om dette med "planlegging": Systemutvikling. Prosjektdokumentasjon kan foregås hele tiden.
+
+Ikke bruke ordet startup om prosjektet.
+
+Satero / Zotero?? - for å holde styr på litteraturen (samle og lagre litteratur) - som extencion i word?. Man kan dele sånn at man har felles bibliotek mellom flere personer. Satero gir fin mappestruktur.
+
+MØTE 4/2 NOTATER: Neste møte: onsdag 11/2 kl. 15.30   Python-pakker som kan gjøre det automatisk Scikit-learn (dele opp malign og benigne svulster). Boxel-basert modell som leser det som 3D-modell - blir heavy for nettsiden/applikasjon? Får da større modell, computemessig blir det ikke større. Bedre resultater av å bruke hele datasettet - for å sjekke at pipeline funker starte med mindre. K-fold cross-validation (metode for å dele opp datasettet) Test vs. validation Må ha et datasett som du tester på en gang til slutt (ikke det samme som ble brukt til testdata). Lese om dataloaders, finnes på PyTorch. Virtuell environment lar deg ikke kjøre på tvers av OS (feks Linux og windows). Bruke heller docker? Sette opp at docker bruker Poetry (open source), Poetry mer etablert. UV (ultraviolet) -> raskere. Pipeline: Dicom -> nifti -> PyTorch   Videre arbeid: Se på CNN-modell (RestNet) Begynne å lage FrontEnd Brukertesting? - hva ønsker dere å se? Osv. Helst Lege/Radiologer, men også ok med studenter (tannlege, medisin, fysio). Ta kontakt med Hedda om GPUene nevne størrelsen på datasett til henne - sende mail til henne.
+
+80 prosent after 20 epochs - rest-net-test.py
+
+Gruppe møte 12.02.26 Vi begynner å bruke Burndown chart for holde kontroll på progress alt text
+
+Møte 18/2 med internveileder Datasett og databehandling • Vi har et lite datasett, og bør derfor vurdere data augmentation som metode for å øke datamengden. • Eksempler: resize av bilder, rotasjon av bilder. • Noen benytter også generativ AI for å generere nye bilder basert på eksisterende bilder.
+
+• Dersom datasettet er ubalansert (flere samples i én klasse enn i en annen), kan dette ha stor effekt på modellens ytelse.
+   • Anbefalt å lese om class imbalance og metoder for å håndtere dette i machine learning.
+• Målet er å skille mellom benigne og maligne tilfeller.
+   • Det handler ikke primært om å gjenkjenne malignitet isolert, men å kunne skille mellom benign og malign.
+   • Eventuelt også vurdere: Skille mellom knute og ikke knute?
+Modellvurdering • Hvorvidt modellen er «bra» eller «ikke bra» er ikke det viktigste. • Prosessen og metodikken bak arbeidet er det som har størst betydning.
+
+Frontend • Viktig å ta dokumentere prosessen før utvikling av frontend-delen av webapplikasjonen ifm av f.eks. diagrammer/skisser o.l.
+
+⸻
+
+Før neste møte – onsdag 25/2 • Avklare om møtet skal være digitalt eller fysisk. • Sende e-post til Trym. • Er det begrensning på 10 GB i GitLab? • Eventuelt spørre Hedda om tilgang til mer lagringsplass/data.
+
+⸻
+
+Videre arbeid • Etablere faste ukentlige møter på torsdager (avklare klokkeslett). • Dokumentere arbeidet fortløpende på GitHub, slik at alle i prosjektet kan følge fremdriften i de ulike delene av arbeidet.
+
+Møte 19/2 (ukentlig sprint m/gruppa) • Gå over til egne branch på github repoet. • Setter opp kanban board for videre arbeid. • Sende mail til Trym: Digitale møter (har blitt gjort).'
 
 
-
-## Getting started
-
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
-
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
-
-## Add your files
-
-* [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-* [Add files using the command line](https://docs.gitlab.com/topics/git/add_files/#add-files-to-a-git-repository) or push an existing Git repository with the following command:
-
-```
-cd existing_repo
-git remote add origin https://gitlab.cs.oslomet.no/fikal5351/bachelor-crai-gitlab.git
-git branch -M main
-git push -uf origin main
-```
-
-## Integrate with your tools
-
-* [Set up project integrations](https://gitlab.cs.oslomet.no/fikal5351/bachelor-crai-gitlab/-/settings/integrations)
-
-## Collaborate with your team
-
-* [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-* [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-* [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-* [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-* [Set auto-merge](https://docs.gitlab.com/user/project/merge_requests/auto_merge/)
-
-## Test and Deploy
-
-Use the built-in continuous integration in GitLab.
-
-* [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/)
-* [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-* [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-* [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-* [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
-
-***
-
-# Editing this README
-
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
-
-## Suggestions for a good README
-
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
-
-## Name
-Choose a self-explaining name for your project.
-
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
-
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
-
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
-
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
-
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
-
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
-
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
-
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
-
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
-
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
-
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
-
-## License
-For open source projects, say how it is licensed.
-
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+New one! 
+New one! 
+New one! 
