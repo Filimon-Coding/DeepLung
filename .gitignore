@@ -33,3 +33,4 @@ underDev/pylidc/*
 underDev2/Data/*
 
 nifti_output_python
+.venv/
