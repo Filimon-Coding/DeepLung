@@ -35,3 +35,18 @@ underDev2/Data/*
 nifti_output_python
 .venv/
 .venv
+
+
+
+
+# Medical data / outputs (examples)
+nifti_output_python/
+underDev2/Data/
+underDev/pylidc/
+**/*.nii
+**/*.nii.gz
+**/*.dcm
+**/*.mhd
+**/*.raw
+**/*.npz
+**/*.npy
