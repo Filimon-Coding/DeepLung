@@ -1,0 +1,57 @@
+/* Default font settings */
+:root {
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  /* LIGHT MODE VARIABLES (default) */
+  --bg: #f8fbff;
+  --surface: #ffffff;
+  --text: #111827;
+  --border: rgba(17, 24, 39, 0.08);
+  --shadow: 0 10px 24px rgba(0, 0, 0, 0.08);
+
+  --text-secondary: #4b5563; /* stronger than muted */
+  --muted: #6b7280;          /* current muted */
+  --text-muted: #9ca3af;     /* lightest */
+
+  --error: #dc2626;          /* strong red */
+  --error-bg: #fee2e2;       /* soft red background */
+
+  --accent: #2563eb;
+}
+
+/* DARK MODE VARIABLES */
+:root[data-theme="dark"] {
+  --bg: #0b1220;
+  --surface: #0f172a;
+  --text: #e5e7eb;
+  --border: rgba(255, 255, 255, 0.08);
+  --shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
+
+  --text-secondary: #cbd5e1; /* clearer in dark mode */
+  --muted: #9ca3af;          /* current muted */
+  --text-muted: #94a3b8;     /* slightly clearer than muted */
+
+  --error: #f87171;          /* lighter red for dark */
+  --error-bg: rgba(248, 113, 113, 0.1);
+
+    --accent: #3b82f6;
+}
+
+body {
+  margin: 0;
+  padding-top: 80px;
+  min-width: 320px;
+  min-height: 100vh;
+
+  background: var(--bg);
+  color: var(--text);
+
+  transition: background 0.25s ease, color 0.25s ease;
+}

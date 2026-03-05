@@ -1,0 +1,32 @@
+.droparea {
+  margin: 1rem auto;
+  width: 384px;
+  max-width: 100%;
+  height: 160px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  border: 2px dashed #999;
+  border-radius: 12px;
+  background: #f3f4f6;
+  color: #333;
+  text-align: center;
+  padding: 24px;
+}
+
+.green-border {
+  border-color: green;
+}
+
+.drop-title {
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.drop-subtitle {
+  font-size: 14px;
+  opacity: 0.7;
+}
