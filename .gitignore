@@ -35,6 +35,7 @@ underDev2/Data/*
 nifti_output_python
 .venv/
 .venv
+testData
 
 
 
