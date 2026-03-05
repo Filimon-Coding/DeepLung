@@ -13,7 +13,7 @@ export type AnalyzeResponse = {
  */
 export async function analyzeImage(file: File): Promise<AnalyzeResponse> {
   const formData = new FormData();
-  formData.append("file", file);
+  formData.append("File", file);
 
   const res = await fetch(`${API_BASE_URL}/api/analyze`, {
     method: "POST",

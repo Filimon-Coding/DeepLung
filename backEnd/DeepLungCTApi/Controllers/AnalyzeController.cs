@@ -8,16 +8,18 @@ namespace DeepLungCTApi.Controllers;
 public class AnalyzeController : ControllerBase
 {
     [HttpPost("analyze")]
+    [Consumes("multipart/form-data")]
     [RequestSizeLimit(30_000_000)]
-    public async Task<ActionResult<AnalyzeResponse>> Analyze([FromForm] IFormFile file)
+    public async Task<ActionResult<AnalyzeResponse>> Analyze([FromForm] AnalyzeUploadRequest request)
     {
+        var file = request.File;
+
         if (file == null || file.Length == 0)
             return BadRequest("No file uploaded.");
 
         using var ms = new MemoryStream();
         await file.CopyToAsync(ms);
 
-        // TODO: Koble på ekte ML senere
         var res = new AnalyzeResponse
         {
             filename = file.FileName,

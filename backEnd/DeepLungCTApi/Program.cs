@@ -5,13 +5,22 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 
+// Swagger
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(c =>
+{
+    // Dette gjør Swagger mindre “kranglete” med nullable osv.
+    c.SupportNonNullableReferenceTypes();
+});
+
+// SQLite
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
     var cs = builder.Configuration.GetConnectionString("Default");
     options.UseSqlite(cs);
 });
 
-// Vite dev server
+// CORS (Vite)
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("dev", policy =>
@@ -25,14 +34,24 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// auto-migrate on start (enkelt)
+// Auto-migrate on start
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     db.Database.Migrate();
 }
 
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+
 app.UseCors("dev");
+
+// (optional, men ok å ha)
+app.UseHttpsRedirection();
+
 app.MapControllers();
 
 app.Run();

@@ -1,3 +1,11 @@
+/home/neov/Documents/MinCodingLinuxV/Prosjekter/6thSemester/DATA3900Bacheloroppgave/Bachelor-CRAI/backEnd/DeepLungCTApi/obj/Debug/net8.0/DeepLungCTApi.csproj.AssemblyReference.cache
+/home/neov/Documents/MinCodingLinuxV/Prosjekter/6thSemester/DATA3900Bacheloroppgave/Bachelor-CRAI/backEnd/DeepLungCTApi/obj/Debug/net8.0/DeepLungCTApi.GeneratedMSBuildEditorConfig.editorconfig
+/home/neov/Documents/MinCodingLinuxV/Prosjekter/6thSemester/DATA3900Bacheloroppgave/Bachelor-CRAI/backEnd/DeepLungCTApi/obj/Debug/net8.0/DeepLungCTApi.AssemblyInfoInputs.cache
+/home/neov/Documents/MinCodingLinuxV/Prosjekter/6thSemester/DATA3900Bacheloroppgave/Bachelor-CRAI/backEnd/DeepLungCTApi/obj/Debug/net8.0/DeepLungCTApi.AssemblyInfo.cs
+/home/neov/Documents/MinCodingLinuxV/Prosjekter/6thSemester/DATA3900Bacheloroppgave/Bachelor-CRAI/backEnd/DeepLungCTApi/obj/Debug/net8.0/DeepLungCTApi.csproj.CoreCompileInputs.cache
+/home/neov/Documents/MinCodingLinuxV/Prosjekter/6thSemester/DATA3900Bacheloroppgave/Bachelor-CRAI/backEnd/DeepLungCTApi/obj/Debug/net8.0/DeepLungCTApi.MvcApplicationPartsAssemblyInfo.cs
+/home/neov/Documents/MinCodingLinuxV/Prosjekter/6thSemester/DATA3900Bacheloroppgave/Bachelor-CRAI/backEnd/DeepLungCTApi/obj/Debug/net8.0/DeepLungCTApi.MvcApplicationPartsAssemblyInfo.cache
+/home/neov/Documents/MinCodingLinuxV/Prosjekter/6thSemester/DATA3900Bacheloroppgave/Bachelor-CRAI/backEnd/DeepLungCTApi/obj/Debug/net8.0/DeepLungCTApi.sourcelink.json
 /home/neov/Documents/MinCodingLinuxV/Prosjekter/6thSemester/DATA3900Bacheloroppgave/Bachelor-CRAI/backEnd/DeepLungCTApi/bin/Debug/net8.0/appsettings.Development.json
 /home/neov/Documents/MinCodingLinuxV/Prosjekter/6thSemester/DATA3900Bacheloroppgave/Bachelor-CRAI/backEnd/DeepLungCTApi/bin/Debug/net8.0/appsettings.json
 /home/neov/Documents/MinCodingLinuxV/Prosjekter/6thSemester/DATA3900Bacheloroppgave/Bachelor-CRAI/backEnd/DeepLungCTApi/bin/Debug/net8.0/DeepLungCTApi
@@ -112,14 +120,6 @@
 /home/neov/Documents/MinCodingLinuxV/Prosjekter/6thSemester/DATA3900Bacheloroppgave/Bachelor-CRAI/backEnd/DeepLungCTApi/bin/Debug/net8.0/runtimes/win-arm64/native/e_sqlite3.dll
 /home/neov/Documents/MinCodingLinuxV/Prosjekter/6thSemester/DATA3900Bacheloroppgave/Bachelor-CRAI/backEnd/DeepLungCTApi/bin/Debug/net8.0/runtimes/win-x64/native/e_sqlite3.dll
 /home/neov/Documents/MinCodingLinuxV/Prosjekter/6thSemester/DATA3900Bacheloroppgave/Bachelor-CRAI/backEnd/DeepLungCTApi/bin/Debug/net8.0/runtimes/win-x86/native/e_sqlite3.dll
-/home/neov/Documents/MinCodingLinuxV/Prosjekter/6thSemester/DATA3900Bacheloroppgave/Bachelor-CRAI/backEnd/DeepLungCTApi/obj/Debug/net8.0/DeepLungCTApi.csproj.AssemblyReference.cache
-/home/neov/Documents/MinCodingLinuxV/Prosjekter/6thSemester/DATA3900Bacheloroppgave/Bachelor-CRAI/backEnd/DeepLungCTApi/obj/Debug/net8.0/DeepLungCTApi.GeneratedMSBuildEditorConfig.editorconfig
-/home/neov/Documents/MinCodingLinuxV/Prosjekter/6thSemester/DATA3900Bacheloroppgave/Bachelor-CRAI/backEnd/DeepLungCTApi/obj/Debug/net8.0/DeepLungCTApi.AssemblyInfoInputs.cache
-/home/neov/Documents/MinCodingLinuxV/Prosjekter/6thSemester/DATA3900Bacheloroppgave/Bachelor-CRAI/backEnd/DeepLungCTApi/obj/Debug/net8.0/DeepLungCTApi.AssemblyInfo.cs
-/home/neov/Documents/MinCodingLinuxV/Prosjekter/6thSemester/DATA3900Bacheloroppgave/Bachelor-CRAI/backEnd/DeepLungCTApi/obj/Debug/net8.0/DeepLungCTApi.csproj.CoreCompileInputs.cache
-/home/neov/Documents/MinCodingLinuxV/Prosjekter/6thSemester/DATA3900Bacheloroppgave/Bachelor-CRAI/backEnd/DeepLungCTApi/obj/Debug/net8.0/DeepLungCTApi.MvcApplicationPartsAssemblyInfo.cs
-/home/neov/Documents/MinCodingLinuxV/Prosjekter/6thSemester/DATA3900Bacheloroppgave/Bachelor-CRAI/backEnd/DeepLungCTApi/obj/Debug/net8.0/DeepLungCTApi.MvcApplicationPartsAssemblyInfo.cache
-/home/neov/Documents/MinCodingLinuxV/Prosjekter/6thSemester/DATA3900Bacheloroppgave/Bachelor-CRAI/backEnd/DeepLungCTApi/obj/Debug/net8.0/DeepLungCTApi.sourcelink.json
 /home/neov/Documents/MinCodingLinuxV/Prosjekter/6thSemester/DATA3900Bacheloroppgave/Bachelor-CRAI/backEnd/DeepLungCTApi/obj/Debug/net8.0/staticwebassets.build.json
 /home/neov/Documents/MinCodingLinuxV/Prosjekter/6thSemester/DATA3900Bacheloroppgave/Bachelor-CRAI/backEnd/DeepLungCTApi/obj/Debug/net8.0/staticwebassets.development.json
 /home/neov/Documents/MinCodingLinuxV/Prosjekter/6thSemester/DATA3900Bacheloroppgave/Bachelor-CRAI/backEnd/DeepLungCTApi/obj/Debug/net8.0/staticwebassets/msbuild.DeepLungCTApi.Microsoft.AspNetCore.StaticWebAssets.props

@@ -1,11 +1,13 @@
+import { API_BASE_URL } from "./client";
+
 export async function loginUser(email: string, password: string) {
-  const res = await fetch("http://127.0.0.1:8000/api/login", { 
+  const res = await fetch(`${API_BASE_URL}/api/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email, password }),
   });
 
-const data = await res.json().catch(() => null);
+  const data = await res.json().catch(() => null);
 
   if (!res.ok) {
     const msg = data?.detail ?? `Login failed (${res.status})`;
@@ -21,11 +23,9 @@ export async function registerUser(
   confirmPassword: string,
   role: "doctor" | "admin" = "doctor"
 ) {
-  const res = await fetch("http://127.0.0.1:8000/api/register", {
+  const res = await fetch(`${API_BASE_URL}/api/register`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-
-    // VIKTIG: backend forventer confirm_password (snake_case)
     body: JSON.stringify({
       email,
       password,
@@ -41,5 +41,5 @@ export async function registerUser(
     throw new Error(msg);
   }
 
-  return data; // { email, role }
+  return data;
 }
