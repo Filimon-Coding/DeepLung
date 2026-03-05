@@ -1,0 +1,8 @@
+/home/neov/Documents/MinCodingLinuxV/Prosjekter/6thSemester/DATA3900Bacheloroppgave/Bachelor-CRAI/backEnd/DeepLungCTApi/obj/Debug/net8.0/DeepLungCTApi.csproj.AssemblyReference.cache
+/home/neov/Documents/MinCodingLinuxV/Prosjekter/6thSemester/DATA3900Bacheloroppgave/Bachelor-CRAI/backEnd/DeepLungCTApi/obj/Debug/net8.0/DeepLungCTApi.GeneratedMSBuildEditorConfig.editorconfig
+/home/neov/Documents/MinCodingLinuxV/Prosjekter/6thSemester/DATA3900Bacheloroppgave/Bachelor-CRAI/backEnd/DeepLungCTApi/obj/Debug/net8.0/DeepLungCTApi.AssemblyInfoInputs.cache
+/home/neov/Documents/MinCodingLinuxV/Prosjekter/6thSemester/DATA3900Bacheloroppgave/Bachelor-CRAI/backEnd/DeepLungCTApi/obj/Debug/net8.0/DeepLungCTApi.AssemblyInfo.cs
+/home/neov/Documents/MinCodingLinuxV/Prosjekter/6thSemester/DATA3900Bacheloroppgave/Bachelor-CRAI/backEnd/DeepLungCTApi/obj/Debug/net8.0/DeepLungCTApi.csproj.CoreCompileInputs.cache
+/home/neov/Documents/MinCodingLinuxV/Prosjekter/6thSemester/DATA3900Bacheloroppgave/Bachelor-CRAI/backEnd/DeepLungCTApi/obj/Debug/net8.0/DeepLungCTApi.MvcApplicationPartsAssemblyInfo.cs
+/home/neov/Documents/MinCodingLinuxV/Prosjekter/6thSemester/DATA3900Bacheloroppgave/Bachelor-CRAI/backEnd/DeepLungCTApi/obj/Debug/net8.0/DeepLungCTApi.MvcApplicationPartsAssemblyInfo.cache
+/home/neov/Documents/MinCodingLinuxV/Prosjekter/6thSemester/DATA3900Bacheloroppgave/Bachelor-CRAI/backEnd/DeepLungCTApi/obj/Debug/net8.0/DeepLungCTApi.sourcelink.json
