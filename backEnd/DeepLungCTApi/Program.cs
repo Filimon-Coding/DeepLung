@@ -32,6 +32,15 @@ builder.Services.AddCors(options =>
     });
 });
 
+//Python service HTTP client
+
+builder.Services.AddHttpClient("PythonService", client =>
+{
+    var baseUrl = builder.Configuration["PythonService:BaseUrl"];
+    client.BaseAddress = new Uri(baseUrl!);
+    client.Timeout = TimeSpan.FromSeconds(120);
+});
+
 var app = builder.Build();
 
 // Auto-migrate on start
