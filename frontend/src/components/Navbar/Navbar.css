@@ -1,0 +1,198 @@
+.navbar {
+  position: fixed; /* Gjør den fast */
+  top: 0; /* Navbar helt øverst på sidene */
+  left: 0;
+  width: 100%; /* full bredde */
+  z-index: 1000; /* Sørger for at den ligger over annet innhold */
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  padding: 1rem 2rem;
+
+  background: linear-gradient(90deg, #111827, #1f2937);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+  box-sizing: border-box;
+}
+
+/* Logo */
+.logo {
+  flex-shrink: 0; /* Logo should not shrink */
+  font-size: 1.4rem;
+  font-weight: 700;
+  text-decoration: none;
+  color: #ffffff;
+  letter-spacing: 1px;
+}
+
+.logo:hover {
+  color: #4ade80;
+}
+
+/* Links container */
+.nav-links {
+  display: flex;
+  gap: 2rem;
+  
+  flex: 1;              /* Take remaining space */
+  justify-content: flex-end; /* Push links to the right */
+  min-width: 0;         /* Important: allow flex child to shrink */
+  flex-wrap: wrap;      /* Allow wrap on smaller laptop screens */
+  row-gap: 0.5rem;      /* Nice spacing if it wraps to a 2nd line */
+}
+
+/* Links */
+.nav-link {
+  position: relative;
+  text-decoration: none;
+  font-weight: 500;
+  color: #c084fc; 
+  transition: color 0.2s ease;
+  white-space: nowrap; /* If screen gets small, the links will be laid in 2 lines under each other instead of geting out of screen */
+}
+
+/* Hover */
+.nav-link:hover {
+  color: #ffffff;
+}
+
+/* Active underline animation */
+.nav-link::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -6px;
+  width: 0%;
+  height: 2px;
+  background-color: #4ade80;
+  transition: width 0.25s ease;
+}
+
+.nav-link:hover::after {
+  width: 100%;
+}
+
+/* Active page */
+.nav-link.active {
+  color: #ffffff;
+}
+
+.nav-link.active::after {
+  width: 100%;
+}
+
+.nav-user {
+  margin-left: 1rem;
+  color: #4ade80;
+  font-weight: 500;
+}
+
+.logout-btn {
+  margin-left: 1rem;
+  background: transparent;
+  border: 1px solid #4ade80;
+  color: #4ade80;
+  padding: 0.4rem 0.8rem;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.logout-btn:hover {
+  background: #4ade80;
+  color: #111827;
+}
+
+/* Smaller laptop screens (not mobile) */
+@media (max-width: 1200px) {
+  .navbar {
+    padding: 1rem 1.5rem;
+  }
+
+  .nav-links {
+    gap: 1.2rem;
+  }
+
+  .nav-link {
+    font-size: 0.95rem;
+  }
+}
+
+/* Very small laptops */
+@media (max-width: 1000px) {
+  .nav-links {
+    gap: 1rem;
+  }
+
+  .nav-link {
+    font-size: 0.9rem;
+  }
+
+  .logo {
+    font-size: 1.2rem;
+  }
+}
+
+/* Burger button hidden by default (large screens) */
+.burger {
+  display: none;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0.4rem;
+}
+
+.burger-line {
+  display: block;
+  width: 26px;
+  height: 2px;
+  background: white;
+  margin: 6px 0;
+}
+
+/* Dropdown menu styling */
+.dropdown {
+  position: absolute;
+  top: 70px;
+  right: 2rem;
+
+  background: #0f172a;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  padding: 0.75rem;
+
+  display: grid;
+  gap: 0.4rem;
+
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.25);
+  z-index: 1200;
+}
+
+.dropdown-link {
+  color: #d1d5db;
+  text-decoration: none;
+  padding: 0.6rem 0.8rem;
+  border-radius: 10px;
+  font-weight: 500;
+}
+
+.dropdown-link:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: white;
+}
+
+.dropdown-link.active {
+  background: rgba(34, 197, 94, 0.15);
+  color: white;
+}
+
+/* Collapse into burger on smaller laptop screens */
+@media (max-width: 1100px) {
+  .nav-links {
+    display: none;
+  }
+
+  .burger {
+    display: block;
+  }
+}
