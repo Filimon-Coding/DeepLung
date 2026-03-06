@@ -3,26 +3,20 @@ import { useNavigate } from "react-router-dom";
 import DragAndDrop from "../components/DragAndDrop/DragAndDrop";
 import AnalyzeButton from "../components/AnalyzeButton/AnalyzeButton";
 import { analyzeImage } from "../api/analyze";
-import "./AnalyzePage.css";
 
-/**
- * AnalyzePage
- * - Receives file from DragAndDrop
- * - Sends file to backend for analysis
- * - Navigates to Results page with response
- */
+function formatBytes(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
 function AnalyzePage() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  
 
   const navigate = useNavigate();
 
-  /**
-   * Upload file to backend and navigate to /results with returned JSON.
-   */
   const handleAnalyze = async () => {
     if (!selectedFile) return;
 
@@ -30,14 +24,9 @@ function AnalyzePage() {
       setIsLoading(true);
       setErrorMsg(null);
 
-      // Call backend and get JSON result
       const result = await analyzeImage(selectedFile);
 
-      // Create a local preview URL so ResultsPage can show the uploaded image
-      const previewUrl = URL.createObjectURL(selectedFile);
-
-      // Navigate to Results and pass data via router state
-      navigate("/results", { state: { result, previewUrl } });
+      navigate("/results", { state: { result } });
     } catch (err) {
       setErrorMsg(err instanceof Error ? err.message : "Unknown error");
     } finally {
@@ -47,46 +36,55 @@ function AnalyzePage() {
 
   return (
     <div className="analyze-page">
-      {/* Title + short description */}
       <header className="analyze-header">
         <h1>Analyze</h1>
         <p className="analyze-subtitle">
-          Upload an image to run the model and view results.
+          Upload a NIfTI file (.nii or .nii.gz) to run the model and view results.
         </p>
       </header>
 
-      {/* Upload Card */}
       <section className="card">
-        <h2 className="card-title">Upload image</h2>
+        <h2 className="card-title">Upload NIfTI file</h2>
         <p className="card-hint">
-          Drag & drop a file into the area below.
+          Drag & drop or click the area below to select a file.
         </p>
 
-        <DragAndDrop onFileSelected={(file) => {
-          setSelectedFile(file);
-          setPreviewUrl(URL.createObjectURL(file));
+        <DragAndDrop
+          onFileSelected={(file) => {
+            setSelectedFile(file);
+            setErrorMsg(null);
           }}
         />
 
-        {/* Show selected file */}
+        {/* File info panel — replaces image preview for NIfTI files */}
         {selectedFile && (
-          <p className="file-selected">
-            Selected file: <strong>{selectedFile.name}</strong>
-          </p>
-        )}
-
-        {/* Show selected image */}
-        {previewUrl && (
-          <div className="image-preview"> 
-          <h3>Preview</h3>
-          <img src={previewUrl} alt="Preview" />
+          <div
+            style={{
+              marginTop: "1.25rem",
+              padding: "1rem 1.25rem",
+              background: "var(--surface-2)",
+              border: "1px solid var(--border)",
+              borderRadius: "12px",
+              display: "flex",
+              flexDirection: "column",
+              gap: "0.35rem",
+            }}
+          >
+            <p style={{ margin: 0, fontWeight: 600, color: "var(--text)" }}>
+              📄 {selectedFile.name}
+            </p>
+            <p style={{ margin: 0, color: "var(--text-secondary)", fontSize: "0.9rem" }}>
+              Size: {formatBytes(selectedFile.size)}
+            </p>
+            <p style={{ margin: 0, color: "var(--text-secondary)", fontSize: "0.9rem" }}>
+              Type: {selectedFile.type || "application/gzip"}
+            </p>
           </div>
         )}
 
-        {/* Show error */}
+        {/* Backend / network error */}
         {errorMsg && <p className="error-text">{errorMsg}</p>}
 
-        {/* Analyze Button moved inside upload card */}
         <div className="analyze-button-row">
           <AnalyzeButton
             disabled={!selectedFile}

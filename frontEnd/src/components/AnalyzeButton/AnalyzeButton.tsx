@@ -1,4 +1,3 @@
-import "./AnalyzeButton.css";
 import Spinner from "../Spinner/Spinner";
 
 type AnalyzeButtonProps = {

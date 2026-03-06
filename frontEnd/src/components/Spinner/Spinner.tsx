@@ -1,4 +1,4 @@
-import "./Spinner.css";
+
 
 type SpinnerProps = {
   /** Accessible label for screen readers */

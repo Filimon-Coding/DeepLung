@@ -1,6 +1,6 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import type { AnalyzeResponse } from "../api/analyze";
-import "./ResultsPage.css";
+
 
 /**
  * ResultsPage
