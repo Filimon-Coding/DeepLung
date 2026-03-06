@@ -5,3 +5,5 @@ torch
 torchio
 SimpleITK
 numpy
+Pillow
+opencv-python-headless
