@@ -18,6 +18,7 @@ public class AnalyzeController : ControllerBase
 
     [HttpPost("analyze")]
     [Consumes("multipart/form-data")]
+    [RequestSizeLimit(200_000_000)] // 200MB (filen din var ~113MB)
     public async Task<ActionResult<AnalyzeResponse>> Analyze([FromForm] AnalyzeUploadRequest request)
     {
         var file = request.File;
@@ -26,14 +27,13 @@ public class AnalyzeController : ControllerBase
 
         var client = _httpClientFactory.CreateClient("PythonService");
 
-        // Build multipart form for PythonService
         using var form = new MultipartFormDataContent();
 
-        using var fileStream = file.OpenReadStream();
-        var fileContent = new StreamContent(fileStream);
-        fileContent.Headers.ContentType = new MediaTypeHeaderValue(file.ContentType);
+        await using var stream = file.OpenReadStream();
+        var fileContent = new StreamContent(stream);
+        fileContent.Headers.ContentType = new MediaTypeHeaderValue(file.ContentType ?? "application/octet-stream");
 
-        // Python expects field name "file" (lowercase) in FastAPI example above
+        // Python expects "file" as field name
         form.Add(fileContent, "file", file.FileName);
 
         using var resp = await client.PostAsync("/analyze", form);
@@ -42,15 +42,13 @@ public class AnalyzeController : ControllerBase
         if (!resp.IsSuccessStatusCode)
             return StatusCode((int)resp.StatusCode, json);
 
-        // Map Python JSON -> AnalyzeResponse
-        // Your AnalyzeResponse uses: filename, content_type, size_bytes, prediction, confidence
-        var doc = JsonDocument.Parse(json);
+        using var doc = JsonDocument.Parse(json);
         var root = doc.RootElement;
 
         var result = new AnalyzeResponse
         {
             filename = root.GetProperty("filename").GetString() ?? file.FileName,
-            content_type = root.GetProperty("content_type").GetString() ?? file.ContentType,
+            content_type = root.GetProperty("content_type").GetString() ?? file.ContentType ?? "application/octet-stream",
             size_bytes = root.GetProperty("size_bytes").GetInt64(),
             prediction = root.GetProperty("prediction").GetString() ?? "Unknown",
             confidence = root.GetProperty("confidence").GetDouble(),
