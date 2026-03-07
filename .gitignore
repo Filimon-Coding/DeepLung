@@ -51,3 +51,4 @@ underDev/pylidc/
 **/*.raw
 **/*.npz
 **/*.npy
+.fake
