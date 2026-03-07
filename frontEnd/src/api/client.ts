@@ -1,5 +1,17 @@
-/**
- * Base URL for backend.
- * In development, FastAPI usually runs on port 8000.
- */
-export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://127.0.0.1:8000";
+export const API_BASE_URL =
+  import.meta.env.VITE_API_BASE_URL ?? "http://127.0.0.1:5056";
+
+export function authHeaders(): Record<string, string> {
+  const token = localStorage.getItem("token");
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
+export function isAuthenticated(): boolean {
+  return !!localStorage.getItem("token");
+}
+
+export function clearAuth(): void {
+  localStorage.removeItem("token");
+  localStorage.removeItem("email");
+  localStorage.removeItem("role");
+}
