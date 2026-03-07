@@ -1,4 +1,4 @@
-import Spinner from "../Spinner/Spinner";
+import Spinner from "./Spinner";
 
 type AnalyzeButtonProps = {
   onClick: () => void;
@@ -7,10 +7,6 @@ type AnalyzeButtonProps = {
   isLoading?: boolean;
 };
 
-/**
- * AnalyzeButton
- * Reusable button controlled by parent (AnalyzePage).
- */
 function AnalyzeButton({
   onClick,
   disabled = false,
