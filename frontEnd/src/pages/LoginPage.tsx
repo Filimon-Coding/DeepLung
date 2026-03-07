@@ -1,59 +1,40 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { loginUser } from "../api/auth";
 
-
-/**
- * LoginPage
- * - Calls FastAPI POST /api/login
- * - Stores returned role/email in localStorage (demo solution)
- */
 function LoginPage() {
-
-  // Form state
-  const [email, setEmail] = useState<string>("");
-  const [password, setPassword] = useState<string>("");
-
-  // UI state
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const navigate = useNavigate();
+
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setErrorMsg(null);
 
-    // Basic validation
     if (!email.trim() || !password.trim()) {
-      setErrorMsg("Please enter email and password.");
+      setErrorMsg("Please enter your email and password.");
       return;
     }
 
     try {
-      setIsLoading(true);
-
-      // Call backend (expects: { email, role })
-      const result = await loginUser(email, password);
-
-      // Store user info temporarily (until you add real auth/JWT)
-      localStorage.setItem("email", result.email);
-      localStorage.setItem("role", result.role);
-
-      // Force refresh after login so Navbar updates
-      window.location.href = "/analyze";
-
+      setLoading(true);
+      await loginUser(email.trim(), password);
+      navigate("/analyze");
     } catch (err) {
-      console.error("Login error:", err);
       setErrorMsg(err instanceof Error ? err.message : "Login failed.");
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
-  };
+  }
 
   return (
     <div className="auth-page">
       <div className="auth-card">
-        <h1 className="auth-title">Login</h1>
-        <p className="auth-subtitle">Sign in to access Analyze and Results.</p>
+        <h1 className="auth-title">Sign in</h1>
+        <p className="auth-subtitle">Access Analyze and your scan history.</p>
 
         <form className="auth-form" onSubmit={handleSubmit}>
           <label className="auth-label">
@@ -63,7 +44,7 @@ function LoginPage() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="admin@crai.com"
+              placeholder="you@example.com"
               autoComplete="email"
             />
           </label>
@@ -75,16 +56,15 @@ function LoginPage() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="test123"
+              placeholder="••••••••"
               autoComplete="current-password"
             />
           </label>
 
-          {/* Error message from failed login */}
           {errorMsg && <p className="auth-error">{errorMsg}</p>}
 
-          <button className="auth-button" type="submit" disabled={isLoading}>
-            {isLoading ? "Signing in..." : "Sign in"}
+          <button className="auth-button" type="submit" disabled={loading}>
+            {loading ? "Signing in..." : "Sign in"}
           </button>
         </form>
 

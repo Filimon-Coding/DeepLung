@@ -5,25 +5,23 @@ import { registerUser } from "../api/auth";
 type Role = "doctor" | "admin";
 
 function RegisterPage() {
-  const navigate = useNavigate();
-
-  // Form state
   const [role, setRole] = useState<Role>("doctor");
-  const [email, setEmail] = useState<string>("");
-  const [password, setPassword] = useState<string>("");
-  const [confirmPassword, setConfirmPassword] = useState<string>("");
-
-  // UI state
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  const handleRegister = async (e: React.FormEvent) => {
+  const navigate = useNavigate();
+
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setErrorMsg(null);
     setSuccessMsg(null);
 
     if (!email.trim() || !password.trim() || !confirmPassword.trim()) {
-      setErrorMsg("Please fill in email and password fields.");
+      setErrorMsg("Please fill in all fields.");
       return;
     }
 
@@ -32,25 +30,32 @@ function RegisterPage() {
       return;
     }
 
-    try {
-      await registerUser(email, password, confirmPassword, role);
-      setSuccessMsg("User created! Redirecting to login...");
-      setTimeout(() => navigate("/login"), 800);
-    } catch (err) {
-      console.error("Register error:", err);
-      setErrorMsg(err instanceof Error ? err.message : "Register failed.");
+    if (password.length < 6) {
+      setErrorMsg("Password must be at least 6 characters.");
+      return;
     }
-  };
+
+    try {
+      setLoading(true);
+      await registerUser(email.trim(), password, confirmPassword, role);
+      setSuccessMsg("Account created successfully.");
+      navigate("/analyze");
+    } catch (err) {
+      setErrorMsg(err instanceof Error ? err.message : "Registration failed.");
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
     <div className="auth-page">
       <div className="auth-card">
-        <h1 className="auth-title">Create Account</h1>
+        <h1 className="auth-title">Create account</h1>
         <p className="auth-subtitle">
-          Create an account to access the AI medical imaging demo.
+          Register to access the AI imaging pipeline.
         </p>
 
-        <form className="auth-form" onSubmit={handleRegister}>
+        <form className="auth-form" onSubmit={handleSubmit}>
           <label className="auth-label">
             Email
             <input
@@ -58,7 +63,7 @@ function RegisterPage() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="name@domain.com"
+              placeholder="you@example.com"
               autoComplete="email"
             />
           </label>
@@ -70,13 +75,13 @@ function RegisterPage() {
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Create a password"
+              placeholder="Min. 6 characters"
               autoComplete="new-password"
             />
           </label>
 
           <label className="auth-label">
-            Confirm Password
+            Confirm password
             <input
               className="auth-input"
               type="password"
@@ -102,15 +107,15 @@ function RegisterPage() {
           {errorMsg && <p className="auth-error">{errorMsg}</p>}
           {successMsg && <p className="auth-success">{successMsg}</p>}
 
-          <button className="auth-button" type="submit">
-            Register
+          <button className="auth-button" type="submit" disabled={loading}>
+            {loading ? "Creating account..." : "Create account"}
           </button>
         </form>
 
         <div className="auth-footer">
           Already have an account?{" "}
           <Link className="auth-link" to="/login">
-            Login
+            Sign in
           </Link>
         </div>
       </div>

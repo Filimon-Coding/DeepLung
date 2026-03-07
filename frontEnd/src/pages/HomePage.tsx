@@ -1,60 +1,62 @@
 import { Link } from "react-router-dom";
+import { isAuthenticated } from "../api/client";
 
-
-/**
- * HomePage: Forklarer hvordan AI-modellen fungerer (ingen opplasting her).
- */
 function HomePage() {
+  const authed = isAuthenticated();
+
   return (
     <div className="home">
-      {/* Hero */}
       <header className="hero">
-        <h1 className="hero-title">AI Medical Imaging Demo</h1>
+        <h1 className="hero-title">
+          AI Medical
+          <br />
+          <span>Imaging Demo</span>
+        </h1>
+
         <p className="hero-subtitle">
-          This application demonstrates a typical AI pipeline for medical imaging.
-          A trained convolutional neural network (CNN) can support detection of patterns
-          in chest CT images.
+          A full-stack demonstration of a 3D convolutional neural network
+          pipeline for lung CT analysis — from NIfTI upload to Grad-CAM
+          attention maps and saved result history.
         </p>
 
-        {/* CTA */}
-        <Link to="/analyze" className="cta">
-          Go to Analyze
+        <Link to={authed ? "/analyze" : "/login"} className="cta">
+          {authed ? "Open Analyze →" : "Sign in to start →"}
         </Link>
       </header>
 
-      {/* How it works */}
       <section className="section">
         <h2 className="section-title">How it works</h2>
 
         <div className="cards">
           <div className="card">
             <div className="card-step">1</div>
-            <h3 className="card-title">Input</h3>
+            <h3 className="card-title">Upload</h3>
             <p className="card-text">
-              Provide an image (Upload an image on the Analyze page to run the model and generate a prediction).
+              Drop a <code>.nii.gz</code> chest CT scan into the Analyze page.
             </p>
           </div>
 
           <div className="card">
             <div className="card-step">2</div>
-            <h3 className="card-title">Preprocessing</h3>
+            <h3 className="card-title">Inference</h3>
             <p className="card-text">
-              The image is resized/normalized to match the model’s expected input.
+              The scan is sent through the backend pipeline and the model returns
+              class probabilities.
             </p>
           </div>
 
           <div className="card">
             <div className="card-step">3</div>
-            <h3 className="card-title">Inference & Output</h3>
+            <h3 className="card-title">Results</h3>
             <p className="card-text">
-              The model computes a prediction score, and the UI displays the result
-              (and later, explanations like heatmaps).
+              View prediction, confidence, probabilities, Grad-CAM attention maps,
+              and saved history.
             </p>
           </div>
         </div>
 
         <p className="disclaimer">
-          Educational demo only — not a medical diagnosis tool.
+          ⚠ Educational demo only — not a certified medical diagnosis tool.
         </p>
       </section>
     </div>
