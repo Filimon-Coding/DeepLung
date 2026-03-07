@@ -134,3 +134,11 @@
 /home/neov/Documents/MinCodingLinuxV/Prosjekter/6thSemester/DATA3900Bacheloroppgave/Bachelor-CRAI/backEnd/DeepLungCTApi/obj/Debug/net8.0/DeepLungCTApi.pdb
 /home/neov/Documents/MinCodingLinuxV/Prosjekter/6thSemester/DATA3900Bacheloroppgave/Bachelor-CRAI/backEnd/DeepLungCTApi/obj/Debug/net8.0/DeepLungCTApi.genruntimeconfig.cache
 /home/neov/Documents/MinCodingLinuxV/Prosjekter/6thSemester/DATA3900Bacheloroppgave/Bachelor-CRAI/backEnd/DeepLungCTApi/obj/Debug/net8.0/ref/DeepLungCTApi.dll
+/home/neov/Documents/MinCodingLinuxV/Prosjekter/6thSemester/DATA3900Bacheloroppgave/Bachelor-CRAI/backEnd/DeepLungCTApi/bin/Debug/net8.0/Microsoft.AspNetCore.Authentication.JwtBearer.dll
+/home/neov/Documents/MinCodingLinuxV/Prosjekter/6thSemester/DATA3900Bacheloroppgave/Bachelor-CRAI/backEnd/DeepLungCTApi/bin/Debug/net8.0/Microsoft.IdentityModel.Abstractions.dll
+/home/neov/Documents/MinCodingLinuxV/Prosjekter/6thSemester/DATA3900Bacheloroppgave/Bachelor-CRAI/backEnd/DeepLungCTApi/bin/Debug/net8.0/Microsoft.IdentityModel.JsonWebTokens.dll
+/home/neov/Documents/MinCodingLinuxV/Prosjekter/6thSemester/DATA3900Bacheloroppgave/Bachelor-CRAI/backEnd/DeepLungCTApi/bin/Debug/net8.0/Microsoft.IdentityModel.Logging.dll
+/home/neov/Documents/MinCodingLinuxV/Prosjekter/6thSemester/DATA3900Bacheloroppgave/Bachelor-CRAI/backEnd/DeepLungCTApi/bin/Debug/net8.0/Microsoft.IdentityModel.Protocols.dll
+/home/neov/Documents/MinCodingLinuxV/Prosjekter/6thSemester/DATA3900Bacheloroppgave/Bachelor-CRAI/backEnd/DeepLungCTApi/bin/Debug/net8.0/Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
+/home/neov/Documents/MinCodingLinuxV/Prosjekter/6thSemester/DATA3900Bacheloroppgave/Bachelor-CRAI/backEnd/DeepLungCTApi/bin/Debug/net8.0/Microsoft.IdentityModel.Tokens.dll
+/home/neov/Documents/MinCodingLinuxV/Prosjekter/6thSemester/DATA3900Bacheloroppgave/Bachelor-CRAI/backEnd/DeepLungCTApi/bin/Debug/net8.0/System.IdentityModel.Tokens.Jwt.dll

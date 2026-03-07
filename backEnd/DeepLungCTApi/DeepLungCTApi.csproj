@@ -7,20 +7,23 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- Swagger (default fra template) -->
+    <!-- Swagger -->
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.24" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
 
     <!-- Password hashing -->
     <PackageReference Include="BCrypt.Net-Next" Version="4.1.0" />
 
-    <!-- EF Core (MÅ være 8.x siden prosjektet er net8.0) -->
+    <!-- EF Core -->
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.24" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.24" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.24">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+
+    <!-- JWT Authentication -->
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.24" />
   </ItemGroup>
 
 </Project>

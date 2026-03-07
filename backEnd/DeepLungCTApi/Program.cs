@@ -1,49 +1,90 @@
+using System.Text;
 using DeepLungCTApi.Data;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 
-// Swagger
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
-    // Dette gjør Swagger mindre “kranglete” med nullable osv.
     c.SupportNonNullableReferenceTypes();
-});
 
-// SQLite
-builder.Services.AddDbContext<AppDbContext>(options =>
-{
-    var cs = builder.Configuration.GetConnectionString("Default");
-    options.UseSqlite(cs);
-});
-
-// CORS (Vite)
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("dev", policy =>
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
-        policy
-            .WithOrigins("http://localhost:5173", "http://127.0.0.1:5173")
-            .AllowAnyHeader()
-            .AllowAnyMethod();
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        Scheme = "Bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "Enter: Bearer {your JWT token}"
+    });
+
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
     });
 });
 
-//Python service HTTP client
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlite(builder.Configuration.GetConnectionString("Default")));
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("dev", policy =>
+        policy
+            .WithOrigins(
+                "http://localhost:5173",
+                "http://127.0.0.1:5173"
+            )
+            .AllowAnyHeader()
+            .AllowAnyMethod());
+});
 
 builder.Services.AddHttpClient("PythonService", client =>
 {
-    var baseUrl = builder.Configuration["PythonService:BaseUrl"];
-    client.BaseAddress = new Uri(baseUrl!);
-    client.Timeout = TimeSpan.FromSeconds(120); // store nifti filer
+    client.BaseAddress = new Uri(builder.Configuration["PythonService:BaseUrl"]!);
+    client.Timeout = TimeSpan.FromSeconds(180);
 });
+
+var jwtSecret = builder.Configuration["Jwt:Secret"]!;
+var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret));
+
+builder.Services
+    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+            IssuerSigningKey = signingKey,
+            ClockSkew = TimeSpan.Zero
+        };
+    });
+
+builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
-// Auto-migrate on start
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -58,8 +99,10 @@ if (app.Environment.IsDevelopment())
 
 app.UseCors("dev");
 
-// (optional, men ok å ha)
 app.UseHttpsRedirection();
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapControllers();
 
