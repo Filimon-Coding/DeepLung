@@ -182,6 +182,21 @@ def gradcam_overlay_b64(
     return _to_b64_png(blend)
 
 
+def cam_to_nifti_b64(cam_3d: np.ndarray) -> str:
+    """Serialize a 3-D Grad-CAM array (D,H,W) as a .nii file, base64-encoded."""
+    sitk_img = sitk.GetImageFromArray(cam_3d.astype(np.float32))
+    tmp_path = None
+    try:
+        with tempfile.NamedTemporaryFile(suffix=".nii", delete=False) as tmp:
+            tmp_path = tmp.name
+        sitk.WriteImage(sitk_img, tmp_path)
+        with open(tmp_path, "rb") as f:
+            return base64.b64encode(f.read()).decode("utf-8")
+    finally:
+        if tmp_path and os.path.exists(tmp_path):
+            os.remove(tmp_path)
+
+
 def predict(model: torch.nn.Module, device: torch.device, nifti_bytes: bytes) -> dict:
     volume = nifti_bytes_to_tensor(nifti_bytes)
     x_batch = volume.unsqueeze(0).to(device)
@@ -195,6 +210,7 @@ def predict(model: torch.nn.Module, device: torch.device, nifti_bytes: bytes) ->
 
     slice_b64 = tensor_to_middle_slice_b64(volume)
     gradcam_b64 = gradcam_overlay_b64(cam_3d, volume)
+    gradcam_nifti_b64 = cam_to_nifti_b64(cam_3d)
 
     return {
         "prediction": CLASS_NAMES[pred_idx],
@@ -203,4 +219,5 @@ def predict(model: torch.nn.Module, device: torch.device, nifti_bytes: bytes) ->
         "prob_malignancy": float(probs[1]),
         "middle_slice_b64": slice_b64,
         "gradcam_b64": gradcam_b64,
+        "gradcam_nifti_b64": gradcam_nifti_b64,
     }
