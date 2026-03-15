@@ -28,7 +28,7 @@ function AnalyzePage() {
       setErrorMsg(null);
 
       const result = await analyzeImage(file);
-      navigate("/results", { state: { result } });
+      navigate("/results", { state: { result, file } });
     } catch (err) {
       setErrorMsg(err instanceof Error ? err.message : "Unknown error");
     } finally {

@@ -341,12 +341,17 @@ button, input, select, textarea { font: inherit; }
 /* ── PAGE CONTAINERS ──────────────────────────────────────── */
 .home,
 .analyze-page,
-.results-container,
 .auth-page,
 .history-page {
   max-width: 1100px;
   margin: 0 auto;
   padding: 6.5rem 1.5rem 4rem;
+}
+
+.results-container {
+  max-width: 1500px;
+  margin: 0 auto;
+  padding: 6.5rem 1rem 4rem;
 }
 
 /* ── CARDS ────────────────────────────────────────────────── */
@@ -967,6 +972,374 @@ button, input, select, textarea { font: inherit; }
   text-align: center;
   padding: 3rem;
   color: var(--text-muted);
+}
+
+/* ── RESULTS PAGE MAIN LAYOUT ─────────────────────────────── */
+
+.results-header--compact {
+  padding-bottom: 0.75rem;
+}
+.results-header--compact .results-title {
+  font-size: 1.5rem;
+  margin-bottom: 0.4rem;
+}
+
+.results-main {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+/* When the 3-D viewer is present, show stats in a horizontal row below it */
+.results-side {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1rem;
+  align-items: start;
+}
+
+.results-viewer-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  overflow: hidden;
+}
+.results-viewer-box .image-box-header {
+  padding: 0.7rem 1rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--primary);
+  border-bottom: 1px solid var(--border);
+}
+
+/* second rule removed — see above grid definition */
+
+/* NIfTI loading / error banner */
+.load-nifti-prompt {
+  background: var(--surface);
+  border: 1px dashed var(--border);
+  border-radius: 12px;
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+.load-nifti-hint {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin: 0;
+}
+.nifti-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--border);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  flex-shrink: 0;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── 2-D SLICE / HEATMAP OVERLAY ─────────────────────────── */
+.slice-overlay-wrap {
+  position: relative;
+  display: block;
+  line-height: 0;
+}
+.slice-overlay-wrap .slice-base {
+  width: 100%;
+  display: block;
+  border-radius: 0 0 8px 8px;
+}
+.slice-overlay-wrap .slice-heatmap {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 0 0 8px 8px;
+  mix-blend-mode: screen;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+}
+
+/* Toggle button */
+.heatmap-toggle-btn {
+  padding: 0.2rem 0.6rem;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
+  white-space: nowrap;
+}
+.heatmap-toggle-btn:hover { border-color: var(--primary); color: var(--primary); }
+.heatmap-toggle-btn.active {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff;
+}
+
+.side-snapshots {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1rem;
+}
+
+.snapshot-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  margin-bottom: 0.75rem;
+}
+.snapshot-row:last-child { margin-bottom: 0; }
+
+.snapshot-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+}
+
+.snapshot-img {
+  width: 100%;
+  border-radius: 6px;
+  display: block;
+  object-fit: contain;
+  border: 1px solid var(--border);
+}
+
+/* ── NIIVUE 3-D VIEWER ────────────────────────────────────── */
+.nv-viewer {
+  display: flex;
+  flex-direction: column;
+  background: #0a0b0e;
+  border-radius: 0 0 16px 16px;
+  overflow: hidden;
+}
+
+/* Fullscreen overlay */
+.nv-fullscreen {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  border-radius: 0;
+}
+
+/* Toolbar */
+.nv-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 0.9rem;
+  background: #11131a;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+  min-height: 44px;
+}
+
+.nv-toolbar-group {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.nv-toolbar-right {
+  margin-left: auto;
+}
+
+.nv-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: rgba(255,255,255,0.35);
+  margin-right: 0.2rem;
+}
+
+.nv-btn {
+  padding: 0.28rem 0.65rem;
+  border-radius: 6px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: transparent;
+  color: rgba(255,255,255,0.55);
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s, border-color 0.12s;
+  white-space: nowrap;
+}
+.nv-btn:hover { border-color: var(--primary); color: var(--primary); }
+.nv-btn-active {
+  background: var(--primary);
+  border-color: var(--primary);
+  color: #fff !important;
+}
+.nv-btn-icon { font-size: 1rem; padding: 0.2rem 0.5rem; }
+
+.nv-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  color: rgba(255,255,255,0.55);
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.nv-opacity-label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.72rem;
+  color: rgba(255,255,255,0.4);
+}
+.nv-opacity-label input[type="range"] {
+  width: 80px;
+  accent-color: var(--primary);
+}
+
+/* Canvas */
+.nv-canvas-wrap {
+  position: relative;
+  flex: 1;
+  width: 100%;
+  display: block;
+}
+
+.nv-canvas {
+  width: 100% !important;
+  height: clamp(520px, 70vh, 900px);
+  display: block !important;
+  background: #060708;
+}
+
+.nv-fullscreen .nv-canvas {
+  height: calc(100vh - 96px); /* toolbar + inspector */
+}
+
+.nv-overlay-msg {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  color: rgba(255,255,255,0.4);
+  background: rgba(6,7,8,0.6);
+  pointer-events: none;
+}
+.nv-overlay-error { color: var(--danger); }
+
+/* Status bar */
+.nv-statusbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.3rem 0.9rem;
+  background: #0d0e14;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  font-size: 0.72rem;
+  color: rgba(255,255,255,0.3);
+  min-height: 28px;
+}
+.nv-statusbar-loc { font-family: monospace; color: rgba(255,255,255,0.5); }
+
+/* ── CURSOR INSPECTOR (ITK-SNAP style) ───────────────────── */
+.nv-inspector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0;
+  background: #0d0f16;
+  border-top: 1px solid rgba(255,255,255,0.07);
+  font-size: 0.78rem;
+}
+
+.nv-inspector-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding: 0.55rem 1rem;
+  border-right: 1px solid rgba(255,255,255,0.07);
+  min-width: 120px;
+}
+.nv-inspector-section:last-child { border-right: none; }
+
+.nv-inspector-title {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  color: rgba(255,255,255,0.3);
+}
+
+/* x y z coordinate row */
+.nv-inspector-coords {
+  display: flex;
+  gap: 1rem;
+  font-family: monospace;
+  color: rgba(255,255,255,0.85);
+  font-size: 0.82rem;
+}
+.nv-inspector-coords em {
+  font-style: normal;
+  color: var(--primary);
+  margin-right: 0.3rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+/* Axial / Coronal / Sagittal slice N/Total */
+.nv-inspector-slices {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  font-family: monospace;
+  color: rgba(255,255,255,0.6);
+  font-size: 0.78rem;
+}
+.nv-inspector-slices span {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.6rem;
+  min-width: 140px;
+}
+.nv-inspector-slices em {
+  font-style: normal;
+  color: rgba(255,255,255,0.9);
+}
+
+/* HU value */
+.nv-inspector-value {
+  font-family: monospace;
+  font-size: 0.9rem;
+  color: #fbbf24;
+  font-weight: 600;
+}
+
+/* Filename */
+.nv-inspector-file {
+  color: rgba(255,255,255,0.25);
+  font-size: 0.72rem;
+  font-family: monospace;
+  align-self: center;
+  min-width: unset;
+  flex: 1;
+  text-align: right;
+  border-right: none;
+  border-left: 1px solid rgba(255,255,255,0.07);
+  padding: 0.55rem 1rem;
 }
 
 /* ── RESPONSIVE ───────────────────────────────────────────── */

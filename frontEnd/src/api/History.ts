@@ -9,6 +9,7 @@ export type HistoryItem = {
   probBenign: number;
   probMalignancy: number;
   createdAtUtc: string;
+  hasNifti: boolean;
 };
 
 export type HistoryResponse = {
@@ -28,9 +29,7 @@ export async function fetchHistory(
   );
 
   if (!res.ok) {
-    if (res.status === 401) {
-      throw new Error("Please log in to view history.");
-    }
+    if (res.status === 401) throw new Error("Please log in to view history.");
     throw new Error(`Failed to load history (${res.status})`);
   }
 
@@ -42,23 +41,36 @@ export async function fetchHistoryDetail(id: number): Promise<AnalyzeResponse> {
     headers: authHeaders(),
   });
 
-  if (!res.ok) {
-    throw new Error(`Failed to load result (${res.status})`);
-  }
+  if (!res.ok) throw new Error(`Failed to load result (${res.status})`);
 
   const d = await res.json();
 
   return {
-    filename: d.filename ?? d.Filename ?? "",
-    content_type: d.content_type ?? d.contentType ?? "",
-    size_bytes: d.size_bytes ?? d.sizeBytes ?? 0,
-    prediction: d.prediction ?? d.Prediction ?? "",
-    confidence: d.confidence ?? d.Confidence ?? 0,
-    prob_benign: d.probBenign ?? d.prob_benign ?? 0,
-    prob_malignancy: d.probMalignancy ?? d.prob_malignancy ?? 0,
-    slice_base64: d.sliceBase64 ?? d.slice_base64 ?? null,
-    heatmap_base64: d.heatmapBase64 ?? d.heatmap_base64 ?? null,
+    analysis_id:       d.id              ?? d.Id              ?? 0,
+    filename:          d.filename        ?? d.Filename        ?? "",
+    content_type:      d.contentType     ?? d.content_type    ?? "",
+    size_bytes:        d.sizeBytes       ?? d.size_bytes      ?? 0,
+    prediction:        d.prediction      ?? d.Prediction      ?? "",
+    confidence:        d.confidence      ?? d.Confidence      ?? 0,
+    prob_benign:       d.probBenign      ?? d.prob_benign     ?? 0,
+    prob_malignancy:   d.probMalignancy  ?? d.prob_malignancy ?? 0,
+    slice_base64:      d.sliceBase64     ?? d.slice_base64    ?? null,
+    heatmap_base64:    d.heatmapBase64   ?? d.heatmap_base64  ?? null,
+    gradcam_nifti_b64: d.gradcamNiftiB64 ?? d.gradcam_nifti_b64 ?? null,
+    has_nifti:         d.hasNifti        ?? d.has_nifti       ?? false,
   };
+}
+
+/** Fetch the stored NIfTI file and return it as a File object ready for NiiVue. */
+export async function fetchNiftiAsFile(id: number, filename: string): Promise<File> {
+  const res = await fetch(`${API_BASE_URL}/api/history/${id}/nifti`, {
+    headers: authHeaders(),
+  });
+
+  if (!res.ok) throw new Error(`Failed to fetch NIfTI file (${res.status})`);
+
+  const blob = await res.blob();
+  return new File([blob], filename, { type: "application/gzip" });
 }
 
 export async function deleteHistoryItem(id: number): Promise<void> {
@@ -67,7 +79,6 @@ export async function deleteHistoryItem(id: number): Promise<void> {
     headers: authHeaders(),
   });
 
-  if (!res.ok && res.status !== 204) {
+  if (!res.ok && res.status !== 204)
     throw new Error(`Failed to delete record (${res.status})`);
-  }
 }

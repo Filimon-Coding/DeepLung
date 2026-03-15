@@ -1,6 +1,7 @@
 import { API_BASE_URL, authHeaders } from "./client";
 
 export type AnalyzeResponse = {
+  analysis_id: number;
   filename: string;
   content_type: string;
   size_bytes: number;
@@ -10,6 +11,8 @@ export type AnalyzeResponse = {
   prob_malignancy: number;
   slice_base64: string | null;
   heatmap_base64: string | null;
+  gradcam_nifti_b64: string | null;
+  has_nifti?: boolean;
 };
 
 async function readError(res: Response): Promise<string> {
@@ -43,5 +46,19 @@ export async function analyzeImage(file: File): Promise<AnalyzeResponse> {
     throw new Error(await readError(res));
   }
 
-  return res.json();
+  const d = await res.json();
+  return {
+    analysis_id:       d.analysisId      ?? d.analysis_id      ?? 0,
+    filename:          d.filename        ?? d.Filename          ?? "",
+    content_type:      d.contentType     ?? d.content_type      ?? "",
+    size_bytes:        d.sizeBytes       ?? d.size_bytes        ?? 0,
+    prediction:        d.prediction      ?? d.Prediction        ?? "",
+    confidence:        d.confidence      ?? d.Confidence        ?? 0,
+    prob_benign:       d.probBenign      ?? d.prob_benign       ?? 0,
+    prob_malignancy:   d.probMalignancy  ?? d.prob_malignancy   ?? 0,
+    slice_base64:      d.middleSliceB64  ?? d.slice_base64      ?? null,
+    heatmap_base64:    d.gradcamB64      ?? d.heatmap_base64    ?? null,
+    gradcam_nifti_b64: d.gradcamNiftiB64 ?? d.gradcam_nifti_b64 ?? null,
+    has_nifti:         true,
+  };
 }
