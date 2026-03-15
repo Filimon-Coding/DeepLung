@@ -23,5 +23,11 @@ public class AnalysisResult
     public string? SliceBase64 { get; set; }
     public string? HeatmapBase64 { get; set; }
 
+    // 3-D Grad-CAM NIfTI (small volume, stored as base64 text)
+    public string? GradcamNiftiB64 { get; set; }
+
+    // Path to the original uploaded NIfTI file saved on disk
+    public string? NiftiStorePath { get; set; }
+
     public DateTime CreatedAtUtc { get; set; } = DateTime.UtcNow;
 }

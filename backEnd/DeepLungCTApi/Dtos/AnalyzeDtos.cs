@@ -30,6 +30,9 @@ public class PythonAnalyzeResponse
 
     [JsonPropertyName("gradcam_b64")]
     public string? GradcamB64 { get; set; }
+
+    [JsonPropertyName("gradcam_nifti_b64")]
+    public string? GradcamNiftiB64 { get; set; }
 }
 
 public class AnalyzeResponse
@@ -47,4 +50,5 @@ public class AnalyzeResponse
 
     public string? MiddleSliceB64 { get; set; }
     public string? GradcamB64 { get; set; }
+    public string? GradcamNiftiB64 { get; set; }
 }

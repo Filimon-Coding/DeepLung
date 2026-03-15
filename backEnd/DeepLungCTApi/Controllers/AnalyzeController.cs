@@ -17,11 +17,13 @@ public class AnalyzeController : ControllerBase
 {
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly AppDbContext _db;
+    private readonly IWebHostEnvironment _env;
 
-    public AnalyzeController(IHttpClientFactory httpClientFactory, AppDbContext db)
+    public AnalyzeController(IHttpClientFactory httpClientFactory, AppDbContext db, IWebHostEnvironment env)
     {
         _httpClientFactory = httpClientFactory;
         _db = db;
+        _env = env;
     }
 
     [HttpPost("analyze")]
@@ -44,15 +46,25 @@ public class AnalyzeController : ControllerBase
         if (!userExists)
             return Unauthorized(new { detail = "User not found." });
 
+        // Read the uploaded file bytes once so we can both save to disk and forward to Python
+        using var memStream = new MemoryStream();
+        await file.CopyToAsync(memStream);
+        var fileBytes = memStream.ToArray();
+
+        // Save NIfTI file to disk for later 3-D viewing from history
+        var storeDir = Path.Combine(_env.ContentRootPath, "nifti_store");
+        Directory.CreateDirectory(storeDir);
+        var storeName = $"{Guid.NewGuid():N}{Path.GetExtension(file.FileName)}";
+        var storePath = Path.Combine(storeDir, storeName);
+        await System.IO.File.WriteAllBytesAsync(storePath, fileBytes);
+
+        // Forward to Python service
         var client = _httpClientFactory.CreateClient("PythonService");
 
         using var form = new MultipartFormDataContent();
-        await using var stream = file.OpenReadStream();
-        using var fileContent = new StreamContent(stream);
-
+        using var fileContent = new ByteArrayContent(fileBytes);
         fileContent.Headers.ContentType =
             new MediaTypeHeaderValue(file.ContentType ?? "application/octet-stream");
-
         form.Add(fileContent, "file", file.FileName);
 
         using var resp = await client.PostAsync("/analyze", form);
@@ -60,6 +72,8 @@ public class AnalyzeController : ControllerBase
 
         if (!resp.IsSuccessStatusCode)
         {
+            // Clean up saved file if Python failed
+            System.IO.File.Delete(storePath);
             return StatusCode((int)resp.StatusCode, new
             {
                 detail = "Python service failed.",
@@ -73,22 +87,27 @@ public class AnalyzeController : ControllerBase
             new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
         if (py == null)
+        {
+            System.IO.File.Delete(storePath);
             return StatusCode(502, new { detail = "Invalid response from Python service." });
+        }
 
         var record = new AnalysisResult
         {
-            UserId = userId,
-            UserEmail = email,
-            Filename = py.Filename,
-            ContentType = py.ContentType,
-            SizeBytes = py.SizeBytes,
-            Prediction = py.Prediction,
-            Confidence = py.Confidence,
-            ProbBenign = py.ProbBenign,
-            ProbMalignancy = py.ProbMalignancy,
-            SliceBase64 = py.MiddleSliceB64,
-            HeatmapBase64 = py.GradcamB64,
-            CreatedAtUtc = DateTime.UtcNow,
+            UserId          = userId,
+            UserEmail       = email,
+            Filename        = py.Filename,
+            ContentType     = py.ContentType,
+            SizeBytes       = py.SizeBytes,
+            Prediction      = py.Prediction,
+            Confidence      = py.Confidence,
+            ProbBenign      = py.ProbBenign,
+            ProbMalignancy  = py.ProbMalignancy,
+            SliceBase64     = py.MiddleSliceB64,
+            HeatmapBase64   = py.GradcamB64,
+            GradcamNiftiB64 = py.GradcamNiftiB64,
+            NiftiStorePath  = storePath,
+            CreatedAtUtc    = DateTime.UtcNow,
         };
 
         _db.AnalysisResults.Add(record);
@@ -96,16 +115,17 @@ public class AnalyzeController : ControllerBase
 
         return Ok(new AnalyzeResponse
         {
-            AnalysisId = record.Id,
-            Filename = record.Filename,
-            ContentType = record.ContentType,
-            SizeBytes = record.SizeBytes,
-            Prediction = record.Prediction,
-            Confidence = record.Confidence,
-            ProbBenign = record.ProbBenign,
-            ProbMalignancy = record.ProbMalignancy,
-            MiddleSliceB64 = record.SliceBase64,
-            GradcamB64 = record.HeatmapBase64,
+            AnalysisId      = record.Id,
+            Filename        = record.Filename,
+            ContentType     = record.ContentType,
+            SizeBytes       = record.SizeBytes,
+            Prediction      = record.Prediction,
+            Confidence      = record.Confidence,
+            ProbBenign      = record.ProbBenign,
+            ProbMalignancy  = record.ProbMalignancy,
+            MiddleSliceB64  = record.SliceBase64,
+            GradcamB64      = record.HeatmapBase64,
+            GradcamNiftiB64 = record.GradcamNiftiB64,
         });
     }
 }

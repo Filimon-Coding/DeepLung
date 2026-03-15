@@ -39,7 +39,13 @@ namespace DeepLungCTApi.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("GradcamNiftiB64")
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("HeatmapBase64")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("NiftiStorePath")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Prediction")
