@@ -1,5 +1,6 @@
 using System.Text;
 using DeepLungCTApi.Data;
+using DeepLungCTApi.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -89,6 +90,23 @@ using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     db.Database.Migrate();
+
+    // Seed default admin account if none exists
+    if (!db.Users.Any(u => u.Role == "admin"))
+    {
+        db.Users.Add(new User
+        {
+            UserId = "admin01",
+            Email = "admin@deeplungct.local",
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword("Admin@2026"),
+            Role = "admin",
+            FirstName = "Admin",
+            LastName = "User",
+            MustChangePassword = true,
+            CreatedAtUtc = DateTime.UtcNow,
+        });
+        db.SaveChanges();
+    }
 }
 
 if (app.Environment.IsDevelopment())
