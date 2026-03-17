@@ -3,6 +3,7 @@ namespace DeepLungCTApi.Models;
 public class User
 {
     public int Id { get; set; }
+    //// 
 
     /// <summary>Generated login ID, e.g. "yobe2801". Unique.</summary>
     public string? UserId { get; set; }
