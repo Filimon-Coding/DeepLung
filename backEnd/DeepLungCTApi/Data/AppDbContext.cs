@@ -9,11 +9,16 @@ public class AppDbContext : DbContext
 
     public DbSet<User> Users => Set<User>();
     public DbSet<AnalysisResult> AnalysisResults => Set<AnalysisResult>();
+    public DbSet<AccessRequest> AccessRequests => Set<AccessRequest>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<User>()
             .HasIndex(u => u.Email)
+            .IsUnique();
+
+        modelBuilder.Entity<User>()
+            .HasIndex(u => u.UserId)
             .IsUnique();
 
         modelBuilder.Entity<AnalysisResult>()
