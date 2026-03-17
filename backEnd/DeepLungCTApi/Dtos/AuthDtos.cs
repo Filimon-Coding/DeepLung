@@ -16,13 +16,16 @@ public class RegisterRequest
 
 public class LoginRequest
 {
-    public string Email { get; set; } = "";
+    /// <summary>Generated user ID (e.g. "yobe2801"). Used as the primary login identifier.</summary>
+    public string UserId { get; set; } = "";
     public string Password { get; set; } = "";
 }
 
 public class AuthResponse
 {
+    public string UserId { get; set; } = "";
     public string Email { get; set; } = "";
     public string Role { get; set; } = "doctor";
     public string Token { get; set; } = "";
+    public bool MustChangePassword { get; set; } = false;
 }

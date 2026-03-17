@@ -1,28 +1,40 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Navigate, useNavigate, Link } from "react-router-dom";
 import { loginUser } from "../api/auth";
+import { isAuthenticated } from "../api/client";
 
 function LoginPage() {
-  const [email, setEmail] = useState("");
+  const [userId, setUserId] = useState("");
   const [password, setPassword] = useState("");
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   const navigate = useNavigate();
 
-  async function handleSubmit(e: React.FormEvent) {
+  if (isAuthenticated()) {
+    const role = localStorage.getItem("role");
+    return <Navigate to={role === "admin" ? "/admin" : "/analyze"} replace />;
+  }
+
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setErrorMsg(null);
 
-    if (!email.trim() || !password.trim()) {
-      setErrorMsg("Please enter your email and password.");
+    if (!userId.trim() || !password.trim()) {
+      setErrorMsg("Please enter your user ID and password.");
       return;
     }
 
     try {
       setLoading(true);
-      await loginUser(email.trim(), password);
-      navigate("/analyze");
+      const data = await loginUser(userId.trim(), password);
+      if (data.mustChangePassword) {
+        navigate("/change-password");
+      } else if (data.role === "admin") {
+        navigate("/admin");
+      } else {
+        navigate("/analyze");
+      }
     } catch (err) {
       setErrorMsg(err instanceof Error ? err.message : "Login failed.");
     } finally {
@@ -38,14 +50,14 @@ function LoginPage() {
 
         <form className="auth-form" onSubmit={handleSubmit}>
           <label className="auth-label">
-            Email
+            User ID
             <input
               className="auth-input"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="you@example.com"
-              autoComplete="email"
+              type="text"
+              value={userId}
+              onChange={(e) => setUserId(e.target.value)}
+              placeholder="yobe2801"
+              autoComplete="username"
             />
           </label>
 
@@ -69,9 +81,9 @@ function LoginPage() {
         </form>
 
         <div className="auth-footer">
-          No account?{" "}
-          <Link className="auth-link" to="/register">
-            Create one
+          New employee?{" "}
+          <Link to="/request-access" className="auth-link">
+            Request access
           </Link>
         </div>
       </div>

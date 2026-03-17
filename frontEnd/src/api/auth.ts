@@ -1,9 +1,11 @@
 import { API_BASE_URL } from "./client";
 
 export type AuthResponse = {
+  userId: string;
   email: string;
   role: string;
   token: string;
+  mustChangePassword: boolean;
 };
 
 async function readError(res: Response): Promise<string> {
@@ -21,13 +23,13 @@ async function readError(res: Response): Promise<string> {
 }
 
 export async function loginUser(
-  email: string,
+  userId: string,
   password: string
 ): Promise<AuthResponse> {
   const res = await fetch(`${API_BASE_URL}/api/login`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password }),
+    body: JSON.stringify({ userId, password }),
   });
 
   if (!res.ok) {
@@ -37,8 +39,10 @@ export async function loginUser(
   const data = (await res.json()) as AuthResponse;
 
   localStorage.setItem("token", data.token);
+  localStorage.setItem("userId", data.userId);
   localStorage.setItem("email", data.email);
   localStorage.setItem("role", data.role);
+  localStorage.setItem("mustChangePassword", String(data.mustChangePassword));
 
   return data;
 }

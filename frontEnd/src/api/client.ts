@@ -12,6 +12,8 @@ export function isAuthenticated(): boolean {
 
 export function clearAuth(): void {
   localStorage.removeItem("token");
+  localStorage.removeItem("userId");
   localStorage.removeItem("email");
   localStorage.removeItem("role");
+  localStorage.removeItem("mustChangePassword");
 }

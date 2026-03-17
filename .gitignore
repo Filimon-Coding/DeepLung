@@ -26,6 +26,8 @@ dist-ssr
 # Dataset
 rsna-pneumonia-detection-challenge.zip
 
+backEnd/DeepLungCTApi/nifti_store
+
 
 
 underDev/pylidc/*

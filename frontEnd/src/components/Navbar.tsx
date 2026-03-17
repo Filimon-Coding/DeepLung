@@ -5,12 +5,16 @@ import { useTheme } from "../hooks/useTheme";
 import ThemeToggle from "./ThemeToggle";
 
 function getUserDisplay(): string | null {
-  const email = localStorage.getItem("email");
-  return email ? email.split("@")[0] : null;
+  return localStorage.getItem("userId") ?? null;
+}
+
+function isAdmin(): boolean {
+  return localStorage.getItem("role") === "admin";
 }
 
 function Navbar() {
   const [userDisplay, setUserDisplay] = useState<string | null>(getUserDisplay());
+  const [admin, setAdmin] = useState(isAdmin());
   const [profileOpen, setProfileOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -22,6 +26,7 @@ function Navbar() {
   useEffect(() => {
     const syncUser = () => {
       setUserDisplay(getUserDisplay());
+      setAdmin(isAdmin());
     };
 
     syncUser();
@@ -37,6 +42,7 @@ function Navbar() {
 
   useEffect(() => {
     setUserDisplay(getUserDisplay());
+    setAdmin(isAdmin());
     setProfileOpen(false);
     setMenuOpen(false);
   }, [location.pathname]);
@@ -74,9 +80,9 @@ function Navbar() {
         <NavLink to="/" className={navClass}>Home</NavLink>
         <NavLink to="/analyze" className={navClass}>Analyze</NavLink>
         <NavLink to="/history" className={navClass}>History</NavLink>
+        {admin && <NavLink to="/admin" className={navClass}>Dashboard</NavLink>}
 
         {!userDisplay && <NavLink to="/login" className={navClass}>Login</NavLink>}
-        {!userDisplay && <NavLink to="/register" className={navClass}>Register</NavLink>}
 
         {userDisplay && (
           <div className="profile-menu" ref={profileRef}>
@@ -90,9 +96,18 @@ function Navbar() {
 
             {profileOpen && (
               <div className="profile-dropdown">
+                <NavLink
+                  to="/change-password"
+                  className="profile-dropdown-item"
+                  onClick={() => setProfileOpen(false)}
+                >
+                  Change password
+                </NavLink>
+                <div className="profile-dropdown-divider" />
                 <button
                   type="button"
                   className="profile-dropdown-item"
+                  style={{ color: "var(--danger, #e05c5c)" }}
                   onClick={handleLogout}
                 >
                   Logout
@@ -121,18 +136,21 @@ function Navbar() {
           <NavLink to="/" className="dropdown-link" onClick={() => setMenuOpen(false)}>Home</NavLink>
           <NavLink to="/analyze" className="dropdown-link" onClick={() => setMenuOpen(false)}>Analyze</NavLink>
           <NavLink to="/history" className="dropdown-link" onClick={() => setMenuOpen(false)}>History</NavLink>
+          {admin && <NavLink to="/admin" className="dropdown-link" onClick={() => setMenuOpen(false)}>Dashboard</NavLink>}
 
           {!userDisplay && (
-            <>
-              <NavLink to="/login" className="dropdown-link" onClick={() => setMenuOpen(false)}>Login</NavLink>
-              <NavLink to="/register" className="dropdown-link" onClick={() => setMenuOpen(false)}>Register</NavLink>
-            </>
+            <NavLink to="/login" className="dropdown-link" onClick={() => setMenuOpen(false)}>Login</NavLink>
           )}
 
           {userDisplay && (
-            <button type="button" className="dropdown-logout" onClick={handleLogout}>
-              Logout
-            </button>
+            <>
+              <NavLink to="/change-password" className="dropdown-link" onClick={() => setMenuOpen(false)}>
+                Change password
+              </NavLink>
+              <button type="button" className="dropdown-logout" onClick={handleLogout}>
+                Logout
+              </button>
+            </>
           )}
 
           <ThemeToggle theme={theme} onToggle={toggleTheme} />
