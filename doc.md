@@ -1073,7 +1073,7 @@ User IDs are system-generated and not chosen by the user.
 
 Format: `[2-char first name][2-char last name][2-digit birth day][2-digit counter]`
 
-Example: Younes Benhaid born on 28th → `yobe2801`
+Example: Tor Eide born on 28th → `toei2801`
 
 The counter (`01`) only increments if another user already has the same prefix.
 

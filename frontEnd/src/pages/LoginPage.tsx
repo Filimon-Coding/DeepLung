@@ -16,7 +16,7 @@ function LoginPage() {
     return <Navigate to={role === "admin" ? "/admin" : "/analyze"} replace />;
   }
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: { preventDefault(): void }) {
     e.preventDefault();
     setErrorMsg(null);
 
@@ -56,7 +56,7 @@ function LoginPage() {
               type="text"
               value={userId}
               onChange={(e) => setUserId(e.target.value)}
-              placeholder="yobe2801"
+              placeholder="user0001"
               autoComplete="username"
             />
           </label>

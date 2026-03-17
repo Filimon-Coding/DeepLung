@@ -41,7 +41,7 @@ function ChangePasswordPage() {
     localStorage.getItem("mustChangePassword") === "true";
   const role = localStorage.getItem("role");
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: { preventDefault(): void }) {
     e.preventDefault();
     setErrorMsg(null);
 

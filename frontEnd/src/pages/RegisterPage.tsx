@@ -26,7 +26,7 @@ function RegisterPage() {
     return /^\d{11}$/.test(value.replace(/\s/g, ""));
   }
 
-  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: { preventDefault(): void }) {
     e.preventDefault();
     setErrorMsg(null);
 
@@ -106,7 +106,7 @@ function RegisterPage() {
                 type="text"
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
-                placeholder="Younes"
+                placeholder="Tor"
                 autoComplete="given-name"
               />
             </label>
