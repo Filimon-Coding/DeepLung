@@ -59,3 +59,19 @@ Før neste møte – onsdag 25/2 • Avklare om møtet skal være digitalt eller
 Videre arbeid • Etablere faste ukentlige møter på torsdager (avklare klokkeslett). • Dokumentere arbeidet fortløpende på GitHub, slik at alle i prosjektet kan følge fremdriften i de ulike delene av arbeidet.
 
 Møte 19/2 (ukentlig sprint m/gruppa) • Gå over til egne branch på github repoet. • Setter opp kanban board for videre arbeid. • Sende mail til Trym: Digitale møter (har blitt gjort).
+
+
+
+----- 
+
+18.03 
+oppsummering av møte i dag: Etterspurte tilbakemelding om problemstilling, men veileder mener vi ikke trenger å sette fokus på det så mye og han har heller ikke fått tid til å få sett på det. 
+Filimon viste endringer gjort i webapplikasjoner, der admin bare kan lage nye brukere nå med mer informasjon for å REqueste Access til innlogging, lager 3D-volum direkte i mappen til koden. Tenke på lagring av sensitive data i databasen mtp sikkerhet. Hvis ikke vi får tid til det så må det nevnes i rapporten. 
+Mulig utvikling?: Brukernavn i applikasjonen lagres basert på personalia men samtidig slik at det ikke blir flere brukere med samme brukernavn. 
+Strukturs rapporten etter krav som ligger på canvas. 
+Bruke Sona og ChatGpt til å finne kilder. 
+
+Til neste gang: 
+Strukture rapporten etter dokumentasjonsstandard som ligger på canvas.
+Applikasjonsdelen - fikse mtp sikkerhet 
+Fikse visualiseringen - heatmap
