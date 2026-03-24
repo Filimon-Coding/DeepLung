@@ -1,0 +1,15 @@
+--extra-index-url https://download.pytorch.org/whl/cu121
+
+torch
+torchvision
+
+numpy
+pandas
+scikit-learn
+matplotlib
+tqdm
+
+nibabel
+pydicom
+SimpleITK
+torchio

@@ -43,24 +43,24 @@ train_gpu:
     - git lfs pull
 
   script:
-    - cd underDev2
+    - cd underdev3
     - pip install -r requirements.txt
 
-    - echo "Listing underDev2 (top level):"
+    - echo "Listing underdev3 (top level):"
     - ls -lah . || true
     - echo "Listing Data (top level):"
     - ls -lah Data || true
     - echo "Disk usage for Data:"
     - du -sh Data || true
 
-    - test -d Data || (echo "Missing underDev2/Data/ folder" && exit 1)
-    - test -d Data/Train || (echo "Missing underDev2/Data/Train" && exit 1)
-    - test -d Data/Test || (echo "Missing underDev2/Data/Test" && exit 1)
+    - test -d Data || (echo "Missing underdev3/Data/ folder" && exit 1)
+    - test -d Data/Train || (echo "Missing underdev3/Data/Train" && exit 1)
+    - test -d Data/Test || (echo "Missing underdev3/Data/Test" && exit 1)
 
     - python -u Resnet_classifier_test.py
 
   artifacts:
     when: always
     paths:
-      - underDev2/checkpoints/
+      - underdev3/checkpoints/
     expire_in: 14 days
