@@ -98,46 +98,41 @@ print(f"--- Loaded {len(train_dataset)} training and {len(test_dataset)} test sa
 print(f"--- Crop size: {CROP_SIZE} | Batch size: {BATCH_SIZE} ---")
 
 ############################################
-# MODEL  (ResNetShort — matches inference service)
+# MODEL  (ResNet3D — matches inference service)
 ############################################
-class ResidualBlock(nn.Module):
-    def __init__(self, in_channels, out_channels, mid_channels=None, stride=1):
+class BasicBlock3D(nn.Module):
+    def __init__(self, in_c, out_c, stride=1):
         super().__init__()
-        if mid_channels is None:
-            mid_channels = out_channels // 2
-
         self.conv = nn.Sequential(
-            nn.Conv3d(in_channels, mid_channels, kernel_size=1),
-            nn.BatchNorm3d(mid_channels), nn.ReLU(),
-            nn.Conv3d(mid_channels, mid_channels, kernel_size=3, stride=stride, padding=1),
-            nn.BatchNorm3d(mid_channels), nn.ReLU(),
-            nn.Conv3d(mid_channels, out_channels, kernel_size=1),
-            nn.BatchNorm3d(out_channels),
+            nn.Conv3d(in_c, out_c, 3, stride=stride, padding=1, bias=False),
+            nn.BatchNorm3d(out_c), nn.ReLU(inplace=True),
+            nn.Conv3d(out_c, out_c, 3, stride=1, padding=1, bias=False),
+            nn.BatchNorm3d(out_c),
         )
         self.shortcut = nn.Sequential()
-        if stride != 1 or in_channels != out_channels:
+        if stride != 1 or in_c != out_c:
             self.shortcut = nn.Sequential(
-                nn.Conv3d(in_channels, out_channels, kernel_size=1, stride=stride),
-                nn.BatchNorm3d(out_channels),
+                nn.Conv3d(in_c, out_c, 1, stride=stride, bias=False),
+                nn.BatchNorm3d(out_c),
             )
 
     def forward(self, x):
-        return torch.relu(self.conv(x) + self.shortcut(x))
+        return F.relu(self.conv(x) + self.shortcut(x))
 
 
-class ResNetShort(nn.Module):
+class ResNet3D(nn.Module):
     def __init__(self):
         super().__init__()
         self.prep = nn.Sequential(
-            nn.Conv3d(1, 32, 3, padding=1),
-            nn.BatchNorm3d(32), nn.ReLU(),
+            nn.Conv3d(1, 32, 7, stride=2, padding=3, bias=False),
+            nn.BatchNorm3d(32), nn.ReLU(inplace=True),
+            nn.MaxPool3d(3, stride=2, padding=1),
         )
-        self.layer1 = ResidualBlock(32,  64,  stride=2)
-        self.layer2 = ResidualBlock(64,  128, stride=2)
-        self.layer3 = ResidualBlock(128, 256, stride=2)
+        self.layer1 = BasicBlock3D(32,  64)
+        self.layer2 = BasicBlock3D(64,  128, stride=2)
+        self.layer3 = BasicBlock3D(128, 256, stride=2)
 
         self.avgpool    = nn.AdaptiveAvgPool3d(1)
-        self.dropout    = nn.Dropout3d(p=0.3)
         self.classifier = nn.Linear(256, 2)
 
     def forward(self, x):
@@ -146,7 +141,6 @@ class ResNetShort(nn.Module):
         x = self.layer2(x)
         x = self.layer3(x)
         x = self.avgpool(x)
-        x = self.dropout(x)
         x = x.flatten(1)
         return self.classifier(x)
 
@@ -211,7 +205,7 @@ def save_heatmap_figure(img_tensor, heatmap, label, pred, save_path):
 # TRAINING SETUP
 ############################################
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-model  = ResNetShort().to(device)
+model  = ResNet3D().to(device)
 
 criterion = nn.CrossEntropyLoss()
 optimizer = optim.Adam(model.parameters(), lr=1e-4)

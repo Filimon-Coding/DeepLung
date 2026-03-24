@@ -9,7 +9,7 @@ import torchio as tio
 import SimpleITK as sitk
 from PIL import Image
 
-from model import ResNetShort
+from model import ResNet3D
 
 CLASS_NAMES = ["Benign", "Malignancy"]
 
@@ -20,7 +20,7 @@ preprocess = tio.Compose([
 
 
 def load_model(checkpoint_path: str, device: torch.device) -> torch.nn.Module:
-    model = ResNetShort().to(device)
+    model = ResNet3D().to(device)
     ckpt = torch.load(checkpoint_path, map_location=device)
 
     if isinstance(ckpt, dict) and "model_state_dict" in ckpt:
@@ -86,16 +86,24 @@ def compute_gradcam(
         cam = (weights * acts).sum(dim=1).squeeze()
         cam = F.relu(cam)
 
-        cam_np = cam.detach().cpu().numpy()
-        c_min, c_max = cam_np.min(), cam_np.max()
-        if c_max > c_min:
-            cam_np = (cam_np - c_min) / (c_max - c_min)
+        # Upsample small feature-map CAM (e.g. 8x8x8) back to full volume size
+        target_size = tuple(x_batch.shape[2:])   # (128, 128, 128)
+        cam_up = F.interpolate(
+            cam.detach().cpu().unsqueeze(0).unsqueeze(0),
+            size=target_size,
+            mode="trilinear",
+            align_corners=False,
+        ).squeeze().numpy()
 
-        return cam_np
+        c_min, c_max = cam_up.min(), cam_up.max()
+        if c_max > c_min:
+            cam_up = (cam_up - c_min) / (c_max - c_min)
+
+        return cam_up
 
     except Exception as e:
         print(f"[Grad-CAM] Error: {e}")
-        return np.zeros((16, 16, 16), dtype=np.float32)
+        return np.zeros(tuple(x_batch.shape[2:]), dtype=np.float32)
 
     finally:
         h_f.remove()

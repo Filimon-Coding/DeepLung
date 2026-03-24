@@ -17,6 +17,7 @@ app.add_middleware(
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 MODEL = None
 CHECKPOINT_PATH = "checkpoints/resnet3d_latest.pth"
+# CHECKPOINT_PATH = "checkpoints/resnet3d_epoch_20.pth"
 
 
 @app.on_event("startup")
