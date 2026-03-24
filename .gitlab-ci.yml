@@ -32,7 +32,7 @@ train_gpu:
     - when: manual
       allow_failure: true
   tags:
-    - nvidia-a6000-2
+    - nvidia-a6000
 
   before_script:
     - python -V
