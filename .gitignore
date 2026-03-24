@@ -46,6 +46,8 @@ testData
 nifti_output_python/
 underDev2/Data/
 underDev/pylidc/
+underdev3/Data/
+underdev3/checkpoints/
 **/*.nii
 **/*.nii.gz
 **/*.dcm
