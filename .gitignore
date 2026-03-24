@@ -56,3 +56,4 @@ underdev3/checkpoints/
 **/*.npz
 **/*.npy
 .fake
+gitDualPush.sh

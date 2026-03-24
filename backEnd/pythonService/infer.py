@@ -35,21 +35,19 @@ def load_model(checkpoint_path: str, device: torch.device) -> torch.nn.Module:
     return model
 
 
-def nifti_bytes_to_tensor(nifti_bytes: bytes) -> torch.Tensor:
+def nifti_bytes_to_tensor(nifti_bytes: bytes):
+    """Returns (tensor (1,128,128,128), affine (4x4 numpy))."""
     tmp_path = None
     try:
         with tempfile.NamedTemporaryFile(suffix=".nii.gz", delete=False) as tmp:
             tmp.write(nifti_bytes)
             tmp_path = tmp.name
 
-        img = sitk.ReadImage(tmp_path)
-        arr = sitk.GetArrayFromImage(img).astype(np.float32)  # (D, H, W)
-
-        t = torch.from_numpy(arr).unsqueeze(0)  # (1, D, H, W)
-        subject = tio.Subject(mri=tio.ScalarImage(tensor=t))
+        # Load via TorchIO so spatial metadata (affine) is preserved through CropOrPad
+        subject = tio.Subject(mri=tio.ScalarImage(tmp_path))
         subject = preprocess(subject)
 
-        return subject.mri.data  # (1, 128, 128, 128)
+        return subject.mri.data, subject.mri.affine  # (1,128,128,128), (4,4)
 
     finally:
         if tmp_path and os.path.exists(tmp_path):
@@ -190,14 +188,22 @@ def gradcam_overlay_b64(
     return _to_b64_png(blend)
 
 
-def cam_to_nifti_b64(cam_3d: np.ndarray) -> str:
-    """Serialize a 3-D Grad-CAM array (D,H,W) as a .nii file, base64-encoded."""
-    sitk_img = sitk.GetImageFromArray(cam_3d.astype(np.float32))
+def cam_to_nifti_b64(cam_3d: np.ndarray, affine: np.ndarray | None = None) -> str:
+    """Serialize a 3-D Grad-CAM array (D,H,W) as a .nii file, base64-encoded.
+
+    Pass the affine from the preprocessed TorchIO subject so NiiVue can
+    overlay the heatmap in the same world space as the original CT.
+    """
+    import nibabel as nib
+
+    nib_affine = affine if affine is not None else np.eye(4)
+    nib_img = nib.Nifti1Image(cam_3d.astype(np.float32), nib_affine)
+
     tmp_path = None
     try:
         with tempfile.NamedTemporaryFile(suffix=".nii", delete=False) as tmp:
             tmp_path = tmp.name
-        sitk.WriteImage(sitk_img, tmp_path)
+        nib.save(nib_img, tmp_path)
         with open(tmp_path, "rb") as f:
             return base64.b64encode(f.read()).decode("utf-8")
     finally:
