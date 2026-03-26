@@ -3,6 +3,9 @@
 **Generated:** 2/14/2026, 5:04:55 PM
 **Root Path:** `/home/neov/Documents/MinCodingLinuxV/Prosjekter/6thSemester/DATA3900Bacheloroppgave/Bachelor-CRAI`
 
+
+
+
 -- 
 
 ```
