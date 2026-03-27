@@ -55,9 +55,7 @@ function HomePage() {
           </div>
         </div>
 
-        <p className="disclaimer">
-          ⚠ Educational demo only — not a certified medical diagnosis tool.
-        </p>
+
       </section>
     </div>
   );
