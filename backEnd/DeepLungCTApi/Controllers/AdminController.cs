@@ -108,6 +108,41 @@ public class AdminController : ControllerBase
         return NoContent();
     }
 
+    // ─── GET /api/admin/stats ─────────────────────────────────────────────────
+
+    [HttpGet("stats")]
+    public async Task<IActionResult> GetStats([FromQuery] DateTime? from, [FromQuery] DateTime? to)
+    {
+        var since  = from?.ToUniversalTime() ?? DateTime.UtcNow.AddDays(-30);
+        var before = (to?.ToUniversalTime() ?? DateTime.UtcNow).Date.AddDays(1); // inclusive of 'to' day
+
+        var results = await _db.AnalysisResults
+            .Where(r => r.CreatedAtUtc >= since && r.CreatedAtUtc < before)
+            .Select(r => new { r.Prediction, r.CreatedAtUtc })
+            .ToListAsync();
+
+        var daily = results
+            .GroupBy(r => r.CreatedAtUtc.Date)
+            .OrderBy(g => g.Key)
+            .Select(g => new
+            {
+                date      = g.Key.ToString("yyyy-MM-dd"),
+                benign    = g.Count(r => r.Prediction == "Benign"),
+                malignant = g.Count(r => r.Prediction == "Malignancy"),
+                total     = g.Count(),
+            })
+            .ToList();
+
+        return Ok(new
+        {
+            from      = since.ToString("yyyy-MM-dd"),
+            total     = results.Count,
+            benign    = results.Count(r => r.Prediction == "Benign"),
+            malignant = results.Count(r => r.Prediction == "Malignancy"),
+            daily,
+        });
+    }
+
     // ─── POST /api/admin/users/{id}/reset-password ────────────────────────────
 
     public record ResetPasswordRequest(string NewPassword);
