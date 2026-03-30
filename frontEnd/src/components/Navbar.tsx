@@ -73,17 +73,56 @@ function Navbar() {
   return (
     <nav className="navbar">
       <NavLink to="/" className="logo">
-        CRAI
+        <svg
+          className="logo-icon"
+          viewBox="0 0 32 32"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          aria-hidden="true"
+        >
+          {/* trachea */}
+          <rect x="14" y="1" width="4" height="9" rx="2" fill="currentColor" />
+          {/* left lung */}
+          <path
+            d="M14,9 C13,9 9,10 7,13 C5,16 4.5,20 5.5,23.5 C6.5,27 9,29 12,28.5 C14,28 14,26 14,24 L14,9 Z"
+            fill="currentColor"
+            opacity="0.85"
+          />
+          {/* right lung */}
+          <path
+            d="M18,9 C19,9 23,10 25,13 C27,16 27.5,20 26.5,23.5 C25.5,27 23,29 20,28.5 C18,28 18,26 18,24 L18,9 Z"
+            fill="currentColor"
+            opacity="0.85"
+          />
+          {/* inner vein hint — left */}
+          <path
+            d="M11,15 C10,17 9.5,20 10,23"
+            stroke="white"
+            strokeWidth="1.2"
+            strokeLinecap="round"
+            opacity="0.55"
+          />
+          {/* inner vein hint — right */}
+          <path
+            d="M21,15 C22,17 22.5,20 22,23"
+            stroke="white"
+            strokeWidth="1.2"
+            strokeLinecap="round"
+            opacity="0.55"
+          />
+        </svg>
+        DeepLung
       </NavLink>
 
-      <div className="nav-links">
+      <div className="nav-pill-bar">
         <NavLink to="/" className={navClass}>Home</NavLink>
         <NavLink to="/analyze" className={navClass}>Analyze</NavLink>
         <NavLink to="/history" className={navClass}>History</NavLink>
         {admin && <NavLink to="/admin" className={navClass}>Dashboard</NavLink>}
-
         {!userDisplay && <NavLink to="/login" className={navClass}>Login</NavLink>}
+      </div>
 
+      <div className="nav-right">
         {userDisplay && (
           <div className="profile-menu" ref={profileRef}>
             <button
@@ -137,11 +176,9 @@ function Navbar() {
           <NavLink to="/analyze" className="dropdown-link" onClick={() => setMenuOpen(false)}>Analyze</NavLink>
           <NavLink to="/history" className="dropdown-link" onClick={() => setMenuOpen(false)}>History</NavLink>
           {admin && <NavLink to="/admin" className="dropdown-link" onClick={() => setMenuOpen(false)}>Dashboard</NavLink>}
-
           {!userDisplay && (
             <NavLink to="/login" className="dropdown-link" onClick={() => setMenuOpen(false)}>Login</NavLink>
           )}
-
           {userDisplay && (
             <>
               <NavLink to="/change-password" className="dropdown-link" onClick={() => setMenuOpen(false)}>
@@ -152,7 +189,6 @@ function Navbar() {
               </button>
             </>
           )}
-
           <ThemeToggle theme={theme} onToggle={toggleTheme} />
         </div>
       )}
