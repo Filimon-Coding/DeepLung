@@ -8,6 +8,7 @@
 Bachelor-CRAI is a full-stack medical imaging web application for lung CT analysis.
 The system allows clinical staff (doctors, nurses, radiologists) to:
 
+
 ![alt text](image-1.png)
 
 * request access — a form sent to the administrator
