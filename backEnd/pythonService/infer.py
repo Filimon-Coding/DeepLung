@@ -212,7 +212,7 @@ def cam_to_nifti_b64(cam_3d: np.ndarray, affine: np.ndarray | None = None) -> st
 
 
 def predict(model: torch.nn.Module, device: torch.device, nifti_bytes: bytes) -> dict:
-    volume = nifti_bytes_to_tensor(nifti_bytes)
+    volume, affine = nifti_bytes_to_tensor(nifti_bytes)
     x_batch = volume.unsqueeze(0).to(device)
 
     with torch.no_grad():
@@ -224,7 +224,7 @@ def predict(model: torch.nn.Module, device: torch.device, nifti_bytes: bytes) ->
 
     slice_b64 = tensor_to_middle_slice_b64(volume)
     gradcam_b64 = gradcam_overlay_b64(cam_3d, volume)
-    gradcam_nifti_b64 = cam_to_nifti_b64(cam_3d)
+    gradcam_nifti_b64 = cam_to_nifti_b64(cam_3d, affine)
 
     return {
         "prediction": CLASS_NAMES[pred_idx],
