@@ -133,3 +133,33 @@ export async function resetUserPassword(id: number, newPassword: string): Promis
   });
   if (!res.ok) throw new Error(await readError(res));
 }
+
+// ── Stats ────────────────────────────────────────────────────────────────────
+
+export type DailyStat = {
+  date: string;
+  benign: number;
+  malignant: number;
+  total: number;
+};
+
+export type AdminStats = {
+  from: string;
+  total: number;
+  benign: number;
+  malignant: number;
+  daily: DailyStat[];
+};
+
+export async function fetchAdminStats(from?: string, to?: string): Promise<AdminStats> {
+  const params = new URLSearchParams();
+  if (from) params.set("from", from);
+  if (to)   params.set("to", to);
+  const qs = params.toString();
+  const res = await fetch(
+    `${API_BASE_URL}/api/admin/stats${qs ? `?${qs}` : ""}`,
+    { headers: authHeaders() }
+  );
+  if (!res.ok) throw new Error(await readError(res));
+  return res.json();
+}
