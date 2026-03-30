@@ -171,8 +171,17 @@ export default function NiiVueViewer({ niftiFile, gradcamNiftiB64 }: Props) {
 
   // ── Fullscreen toggle ──────────────────────────────────────────
   const toggleFullscreen = useCallback(() => {
-    setFullscreen((f) => !f);
+    setFullscreen((f) => {
+      const next = !f;
+      document.body.classList.toggle("nv-is-fullscreen", next);
+      return next;
+    });
     setTimeout(() => nvRef.current?.resizeListener(), 50);
+  }, []);
+
+  // Clean up body class if component unmounts while fullscreen
+  useEffect(() => {
+    return () => { document.body.classList.remove("nv-is-fullscreen"); };
   }, []);
 
   const viewButtons: { label: string; value: ViewMode }[] = [
