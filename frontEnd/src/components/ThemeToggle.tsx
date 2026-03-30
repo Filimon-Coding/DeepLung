@@ -6,7 +6,11 @@ type ThemeToggleProps = {
 function ThemeToggle({ theme, onToggle }: ThemeToggleProps) {
   return (
     <button className="theme-toggle" type="button" onClick={onToggle}>
-      {theme === "dark" ? "Light mode" : "Dark mode"}
+      {theme === "dark" ? (
+        <>☀ Light mode</>
+      ) : (
+        <>☽ Dark mode</>
+      )}
     </button>
   );
 }
