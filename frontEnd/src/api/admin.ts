@@ -151,6 +151,44 @@ export type AdminStats = {
   daily: DailyStat[];
 };
 
+// ── System Monitor ───────────────────────────────────────────────────────────
+
+export type LogEntry = {
+  id: number;
+  userId: string;
+  userEmail: string;
+  filename: string;
+  prediction: string;
+  confidence: number;
+  sizeBytes: number;
+  createdAt: string;
+};
+
+export type SystemHealth = {
+  apiStatus: string;
+  pythonServiceStatus: string;
+  totalUsers: number;
+  totalAnalyses: number;
+  pendingRequests: number;
+  checkedAt: string;
+};
+
+export async function fetchSystemLogs(limit = 100): Promise<LogEntry[]> {
+  const res = await fetch(`${API_BASE_URL}/api/admin/logs?limit=${limit}`, {
+    headers: authHeaders(),
+  });
+  if (!res.ok) throw new Error(await readError(res));
+  return res.json();
+}
+
+export async function fetchSystemHealth(): Promise<SystemHealth> {
+  const res = await fetch(`${API_BASE_URL}/api/admin/health`, {
+    headers: authHeaders(),
+  });
+  if (!res.ok) throw new Error(await readError(res));
+  return res.json();
+}
+
 export async function fetchAdminStats(from?: string, to?: string): Promise<AdminStats> {
   const params = new URLSearchParams();
   if (from) params.set("from", from);
