@@ -143,6 +143,66 @@ public class AdminController : ControllerBase
         });
     }
 
+    // ─── GET /api/admin/logs ──────────────────────────────────────────────────
+
+    [HttpGet("logs")]
+    public async Task<IActionResult> GetLogs([FromQuery] int limit = 100)
+    {
+        if (limit < 1) limit = 1;
+        if (limit > 500) limit = 500;
+
+        var logs = await _db.AnalysisResults
+            .Include(r => r.User)
+            .OrderByDescending(r => r.CreatedAtUtc)
+            .Take(limit)
+            .Select(r => new
+            {
+                r.Id,
+                userId = r.User != null ? r.User.UserId : "—",
+                r.UserEmail,
+                r.Filename,
+                r.Prediction,
+                r.Confidence,
+                r.SizeBytes,
+                createdAt = r.CreatedAtUtc.ToString("o"),
+            })
+            .ToListAsync();
+
+        return Ok(logs);
+    }
+
+    // ─── GET /api/admin/health ────────────────────────────────────────────────
+
+    [HttpGet("health")]
+    public async Task<IActionResult> GetHealth()
+    {
+        var totalUsers = await _db.Users.CountAsync();
+        var totalAnalyses = await _db.AnalysisResults.CountAsync();
+        var pendingRequests = await _db.AccessRequests.CountAsync(r => r.Status == "pending");
+
+        string pythonStatus = "unknown";
+        try
+        {
+            using var http = new System.Net.Http.HttpClient { Timeout = TimeSpan.FromSeconds(3) };
+            var resp = await http.GetAsync("http://127.0.0.1:8001/health");
+            pythonStatus = resp.IsSuccessStatusCode ? "online" : "error";
+        }
+        catch
+        {
+            pythonStatus = "offline";
+        }
+
+        return Ok(new
+        {
+            apiStatus = "online",
+            pythonServiceStatus = pythonStatus,
+            totalUsers,
+            totalAnalyses,
+            pendingRequests,
+            checkedAt = DateTime.UtcNow.ToString("o"),
+        });
+    }
+
     // ─── POST /api/admin/users/{id}/reset-password ────────────────────────────
 
     public record ResetPasswordRequest(string NewPassword);
