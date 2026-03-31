@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import type { AnalyzeResponse } from "../api/analyze";
 import { fetchNiftiAsFile } from "../api/History";
@@ -27,6 +27,12 @@ function ResultsPage() {
 
   // 2-D heatmap overlay toggle
   const [showHeatmap, setShowHeatmap] = useState(true);
+
+  // Slice lightbox
+  const [lightboxOpen, setLightboxOpen]         = useState(false);
+  const [lightboxCoords, setLightboxCoords]      = useState<{ x: number; y: number } | null>(null);
+  const [imgNaturalDims, setImgNaturalDims]      = useState<{ w: number; h: number } | null>(null);
+  const lightboxImgRef = useRef<HTMLImageElement>(null);
 
   const r = state?.result;
 
@@ -58,6 +64,25 @@ function ResultsPage() {
         </button>
       </div>
     );
+  }
+
+  function handleLightboxMouseMove(e: React.MouseEvent<HTMLDivElement>) {
+    const wrap = e.currentTarget;
+    const rect = wrap.getBoundingClientRect();
+    const img  = lightboxImgRef.current;
+    if (!img || !imgNaturalDims) return;
+    // The img is object-fit: contain inside the wrap, so compute rendered size
+    const scaleX = img.clientWidth  / imgNaturalDims.w;
+    const scaleY = img.clientHeight / imgNaturalDims.h;
+    const imgLeft = rect.left + (rect.width  - img.clientWidth)  / 2;
+    const imgTop  = rect.top  + (rect.height - img.clientHeight) / 2;
+    const px = Math.round((e.clientX - imgLeft) / scaleX);
+    const py = Math.round((e.clientY - imgTop)  / scaleY);
+    if (px >= 0 && py >= 0 && px <= imgNaturalDims.w && py <= imgNaturalDims.h) {
+      setLightboxCoords({ x: px, y: py });
+    } else {
+      setLightboxCoords(null);
+    }
   }
 
   const isMalignancy  = r.prediction.toLowerCase().includes("malig");
@@ -216,7 +241,16 @@ function ResultsPage() {
 
               {r.slice_base64 && (
                 <div className="snapshot-row">
-                  <span className="snapshot-label">Axial slice</span>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.3rem" }}>
+                    <span className="snapshot-label" style={{ marginBottom: 0 }}>Axial slice</span>
+                    <button
+                      className="snapshot-expand-btn"
+                      title="View fullscreen"
+                      onClick={() => setLightboxOpen(true)}
+                    >
+                      ⛶ Fullscreen
+                    </button>
+                  </div>
                   <div className="slice-overlay-wrap">
                     <img src={`data:image/png;base64,${r.slice_base64}`} alt="axial slice"
                       className="slice-base snapshot-img" />
@@ -272,6 +306,69 @@ function ResultsPage() {
           View history
         </button>
       </div>
+
+      {/* ── Slice Lightbox ──────────────────────────────────── */}
+      {lightboxOpen && r.slice_base64 && (
+        <div
+          className="slice-lightbox-overlay"
+          onClick={(e) => { if (e.target === e.currentTarget) setLightboxOpen(false); }}
+        >
+          <div className="slice-lightbox-inner">
+            {/* toolbar */}
+            <div className="slice-lightbox-toolbar">
+              <span className="slice-lightbox-title">Axial Slice — 2-D Reference</span>
+              {r.heatmap_base64 && (
+                <button
+                  className={`heatmap-toggle-btn${showHeatmap ? " active" : ""}`}
+                  onClick={() => setShowHeatmap((v) => !v)}
+                >
+                  {showHeatmap ? "Hide Heatmap" : "Show Heatmap"}
+                </button>
+              )}
+              <button
+                className="slice-lightbox-close"
+                title="Close"
+                onClick={() => setLightboxOpen(false)}
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* image canvas */}
+            <div
+              className="slice-lightbox-canvas-wrap"
+              onMouseMove={handleLightboxMouseMove}
+              onMouseLeave={() => setLightboxCoords(null)}
+            >
+              <img
+                ref={lightboxImgRef}
+                src={`data:image/png;base64,${r.slice_base64}`}
+                alt="CT axial slice fullscreen"
+                onLoad={(e) => {
+                  const img = e.currentTarget;
+                  setImgNaturalDims({ w: img.naturalWidth, h: img.naturalHeight });
+                }}
+              />
+              {r.heatmap_base64 && (
+                <img
+                  src={`data:image/png;base64,${r.heatmap_base64}`}
+                  alt="Grad-CAM overlay"
+                  className="slice-heatmap"
+                  style={{ opacity: showHeatmap ? 0.6 : 0, transition: "opacity 0.2s" }}
+                />
+              )}
+              {lightboxCoords && (
+                <div className="slice-lightbox-coords">
+                  X: {lightboxCoords.x} · Y: {lightboxCoords.y}
+                  {imgNaturalDims && (
+                    <span style={{ opacity: 0.6 }}> / {imgNaturalDims.w}×{imgNaturalDims.h} px</span>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
