@@ -27,6 +27,9 @@ dist-ssr
 rsna-pneumonia-detection-challenge.zip
 
 backEnd/DeepLungCTApi/nifti_store
+**/*.db
+**/*.db-shm
+**/*.db-wal
 
 
 
@@ -47,6 +50,7 @@ nifti_output_python/
 underDev2/Data/
 underDev/pylidc/
 underdev3/Data/
+CLAUDE.md
 underdev3/checkpoints/
 **/*.nii
 **/*.nii.gz
