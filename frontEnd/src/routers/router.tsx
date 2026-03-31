@@ -14,6 +14,7 @@ import RequestAccessPage from "../pages/RequestAccessPage";
 import AdminDashboard from "../pages/admin/AdminDashboard";
 import AccessRequestsPage from "../pages/admin/AccessRequestsPage";
 import UsersPage from "../pages/admin/UsersPage";
+import SystemMonitorPage from "../pages/admin/SystemMonitorPage";
 
 const router = createBrowserRouter([
   {
@@ -42,6 +43,7 @@ const router = createBrowserRouter([
           { index: true, element: <AdminDashboard /> },
           { path: "requests", element: <AccessRequestsPage /> },
           { path: "users", element: <UsersPage /> },
+          { path: "monitor", element: <SystemMonitorPage /> },
         ],
       },
     ],
