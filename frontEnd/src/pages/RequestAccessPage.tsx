@@ -2,6 +2,8 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { submitAccessRequest } from "../api/admin";
 
+const POSITIONS = ["Doctor", "Nurse", "Radiologist", "Radiographer", "Surgeon","Bio-Engineer", "Student", "Other"];
+
 function RequestAccessPage() {
   const [form, setForm] = useState({
     firstName: "",
@@ -15,7 +17,7 @@ function RequestAccessPage() {
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
 
-  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
+  function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) {
     setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
   }
 
@@ -134,14 +136,17 @@ function RequestAccessPage() {
 
           <label className="auth-label">
             Position / role
-            <input
-              className="auth-input"
-              type="text"
+            <select
+              className="auth-input auth-select"
               name="position"
               value={form.position}
               onChange={handleChange}
-              placeholder="Radiologist"
-            />
+            >
+              <option value="" disabled>Select a role…</option>
+              {POSITIONS.map((p) => (
+                <option key={p} value={p}>{p}</option>
+              ))}
+            </select>
           </label>
 
           {errorMsg && <p className="auth-error">{errorMsg}</p>}
