@@ -8,9 +8,7 @@ export function useTheme() {
     if (saved === "light" || saved === "dark") {
       return saved;
     }
-
-    const prefersDark = window.matchMedia?.("(prefers-color-scheme: dark)").matches;
-    return prefersDark ? "dark" : "light";
+    return "light";
   });
 
   useEffect(() => {
