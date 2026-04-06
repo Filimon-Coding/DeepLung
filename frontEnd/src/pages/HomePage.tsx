@@ -17,8 +17,8 @@ function HomePage() {
             <span>Powered by AI</span>
           </h1>
           <p className="hero-subtitle">
-            Upload a chest CT scan and receive an instant AI-assisted read —
-            confidence scores, class probabilities, and Grad-CAM attention
+            Upload a chest CT scan and receive an instant AI-assisted read with
+            confidence scores, class probabilities, and Grad CAM attention
             heatmaps that show exactly where the model is looking.
           </p>
           <div className="hero-actions">
@@ -44,7 +44,7 @@ function HomePage() {
             </div>
             <div className="hero-stat-divider" />
             <div className="hero-stat">
-              <span className="hero-stat-value">Grad-CAM</span>
+              <span className="hero-stat-value">Grad CAM</span>
               <span className="hero-stat-label">explainability</span>
             </div>
           </div>
@@ -76,8 +76,8 @@ function HomePage() {
             <div className="card-step">2</div>
             <h3 className="card-title">3D AI Inference</h3>
             <p className="card-text">
-              A 3D ResNet processes the full volumetric scan — not individual
-              slices — capturing spatial patterns across all axes to classify
+              A 3D ResNet processes the full volumetric scan not individual
+              slices capturing spatial patterns across all axes to classify
               lung pathology with calibrated confidence.
             </p>
           </div>
@@ -96,7 +96,7 @@ function HomePage() {
 
       {/* ── Disclaimer ───────────────────────────── */}
       <p className="disclaimer">
-        For research and demonstration purposes only — not a certified medical device.
+        For research and demonstration purposes only not a certified medical device.
         Clinical decisions must be made by qualified healthcare professionals.
       </p>
 

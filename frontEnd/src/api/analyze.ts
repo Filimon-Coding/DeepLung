@@ -13,6 +13,11 @@ export type AnalyzeResponse = {
   heatmap_base64: string | null;
   gradcam_nifti_b64: string | null;
   has_nifti?: boolean;
+  slice_index?: number;
+  slice_total?: number;
+  cam_peak_x?: number;
+  cam_peak_y?: number;
+  cam_peak_z?: number;
 };
 
 async function readError(res: Response): Promise<string> {
@@ -60,5 +65,10 @@ export async function analyzeImage(file: File): Promise<AnalyzeResponse> {
     heatmap_base64:    d.gradcamB64      ?? d.heatmap_base64    ?? null,
     gradcam_nifti_b64: d.gradcamNiftiB64 ?? d.gradcam_nifti_b64 ?? null,
     has_nifti:         true,
+    slice_index:       d.sliceIndex      ?? d.slice_index,
+    slice_total:       d.sliceTotal      ?? d.slice_total,
+    cam_peak_x:        d.camPeakX        ?? d.cam_peak_x,
+    cam_peak_y:        d.camPeakY        ?? d.cam_peak_y,
+    cam_peak_z:        d.camPeakZ        ?? d.cam_peak_z,
   };
 }

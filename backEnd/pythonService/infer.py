@@ -36,7 +36,7 @@ def load_model(checkpoint_path: str, device: torch.device) -> torch.nn.Module:
 
 
 def nifti_bytes_to_tensor(nifti_bytes: bytes):
-    """Returns (tensor (1,128,128,128), affine (4x4 numpy))."""
+    """Returns (preprocessed tensor (1,128,128,128), affine (4x4 numpy), original tensor)."""
     tmp_path = None
     try:
         with tempfile.NamedTemporaryFile(suffix=".nii.gz", delete=False) as tmp:
@@ -45,9 +45,13 @@ def nifti_bytes_to_tensor(nifti_bytes: bytes):
 
         # Load via TorchIO so spatial metadata (affine) is preserved through CropOrPad
         subject = tio.Subject(mri=tio.ScalarImage(tmp_path))
+
+        # Keep a copy of the original (full-resolution) volume for visualization
+        original_tensor = subject.mri.data.clone()  # (1, H, W, D) original size
+
         subject = preprocess(subject)
 
-        return subject.mri.data, subject.mri.affine  # (1,128,128,128), (4,4)
+        return subject.mri.data, subject.mri.affine, original_tensor  # (1,128,128,128), (4,4), original
 
     finally:
         if tmp_path and os.path.exists(tmp_path):
@@ -142,7 +146,7 @@ def _jet_colormap(gray_u8: np.ndarray) -> np.ndarray:
     return (rgb * 255).astype(np.uint8)
 
 
-def tensor_to_middle_slice_b64(volume: torch.Tensor, size: int = 256) -> str:
+def tensor_to_middle_slice_b64(volume: torch.Tensor, size: int = 512) -> str:
     vol = volume.squeeze().numpy()
     mid = vol.shape[2] // 2
     sl = vol[:, :, mid].astype(np.float32)
@@ -212,7 +216,7 @@ def cam_to_nifti_b64(cam_3d: np.ndarray, affine: np.ndarray | None = None) -> st
 
 
 def predict(model: torch.nn.Module, device: torch.device, nifti_bytes: bytes) -> dict:
-    volume, affine = nifti_bytes_to_tensor(nifti_bytes)
+    volume, affine, original_volume = nifti_bytes_to_tensor(nifti_bytes)
     x_batch = volume.unsqueeze(0).to(device)
 
     with torch.no_grad():
@@ -222,9 +226,19 @@ def predict(model: torch.nn.Module, device: torch.device, nifti_bytes: bytes) ->
 
     cam_3d = compute_gradcam(model, x_batch, pred_idx)
 
-    slice_b64 = tensor_to_middle_slice_b64(volume)
+    # Use original (full-resolution) volume for the plain slice so it shows the whole scan
+    orig_vol_np = original_volume.squeeze().numpy()
+    slice_total = int(orig_vol_np.shape[2])
+    slice_index = slice_total // 2
+    slice_b64 = tensor_to_middle_slice_b64(original_volume)
+
+    # Grad-CAM overlay stays in preprocessed 128³ space where CAM was computed
     gradcam_b64 = gradcam_overlay_b64(cam_3d, volume)
     gradcam_nifti_b64 = cam_to_nifti_b64(cam_3d, affine)
+
+    # Peak Grad-CAM activation — position of strongest signal in 128³ space
+    peak_flat = int(np.argmax(cam_3d))
+    pz, py, px = np.unravel_index(peak_flat, cam_3d.shape)
 
     return {
         "prediction": CLASS_NAMES[pred_idx],
@@ -234,4 +248,9 @@ def predict(model: torch.nn.Module, device: torch.device, nifti_bytes: bytes) ->
         "middle_slice_b64": slice_b64,
         "gradcam_b64": gradcam_b64,
         "gradcam_nifti_b64": gradcam_nifti_b64,
+        "slice_index": slice_index,
+        "slice_total": slice_total,
+        "cam_peak_x": int(px),
+        "cam_peak_y": int(py),
+        "cam_peak_z": int(pz),
     }

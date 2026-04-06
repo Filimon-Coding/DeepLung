@@ -33,6 +33,21 @@ public class PythonAnalyzeResponse
 
     [JsonPropertyName("gradcam_nifti_b64")]
     public string? GradcamNiftiB64 { get; set; }
+
+    [JsonPropertyName("slice_index")]
+    public int SliceIndex { get; set; }
+
+    [JsonPropertyName("slice_total")]
+    public int SliceTotal { get; set; }
+
+    [JsonPropertyName("cam_peak_x")]
+    public int CamPeakX { get; set; }
+
+    [JsonPropertyName("cam_peak_y")]
+    public int CamPeakY { get; set; }
+
+    [JsonPropertyName("cam_peak_z")]
+    public int CamPeakZ { get; set; }
 }
 
 public class AnalyzeResponse
@@ -51,4 +66,10 @@ public class AnalyzeResponse
     public string? MiddleSliceB64 { get; set; }
     public string? GradcamB64 { get; set; }
     public string? GradcamNiftiB64 { get; set; }
+
+    public int SliceIndex { get; set; }
+    public int SliceTotal { get; set; }
+    public int CamPeakX { get; set; }
+    public int CamPeakY { get; set; }
+    public int CamPeakZ { get; set; }
 }

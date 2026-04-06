@@ -1,5 +1,5 @@
 /* ── Google Fonts ─────────────────────────────────────────── */
-@import url("https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Alfa+Slab+One&family=Syne:wght@600;700;800&family=DM+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap");
 
 /* ── Design Tokens ────────────────────────────────────────── */
 :root {
@@ -8,10 +8,10 @@
   --font-mono:    "IBM Plex Mono", monospace;
 
   /* Background layers — light is default */
-  --bg:        #f8fafb;
-  --surface:   #ffffff;
-  --surface-2: #f0f4f0;
-  --surface-3: #e4ece4;
+  --bg:        #e8ecef;
+  --surface:   #f2f4f6;
+  --surface-2: #dde2e7;
+  --surface-3: #cfd6dc;
 
   /* Text */
   --text:           #111827;
@@ -136,7 +136,8 @@ button, input, select, textarea { font: inherit; }
 }
 
 .logo {
-  font-family: var(--font-display);
+  /* font-family: var(--font-display); */
+  font-family: "Alfa Slab One", serif;
   font-size: 1.2rem;
   font-weight: 800;
   color: var(--primary);
@@ -193,7 +194,7 @@ button, input, select, textarea { font: inherit; }
 
 .nav-link:hover {
   color: var(--text);
-  background: rgba(0, 0, 0, 0.05);
+  background: rgba(0, 0, 0, 0.07);
 }
 
 .nav-link::after {
@@ -207,7 +208,8 @@ button, input, select, textarea { font: inherit; }
 }
 
 html[data-theme="dark"] .nav-link:hover {
-  background: rgba(255, 255, 255, 0.07);
+  color: #e2e8f0;
+  background: rgba(255, 255, 255, 0.14);
 }
 
 .profile-menu {
@@ -393,9 +395,9 @@ html[data-theme="dark"] .nav-link:hover {
 }
 
 .hero-title {
-  font-family: var(--font-display);
+  font-family: "Alfa Slab One", serif;
   font-size: clamp(2rem, 4vw, 3.2rem);
-  font-weight: 800;
+  font-weight: 900;
   line-height: 1.1;
   color: var(--text);
   margin-bottom: 1.1rem;
@@ -991,6 +993,48 @@ html[data-theme="dark"] .nav-link:hover {
   color: var(--text);
 }
 
+/* Analysis summary card — first in the cards row */
+.results-summary-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.25rem;
+}
+
+.summary-scaninfo {
+  margin-top: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  border-top: 1px solid var(--border);
+  padding-top: 0.65rem;
+  width: 100%;
+}
+
+.summary-scaninfo-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+}
+
+.summary-scaninfo-lbl {
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-size: 0.68rem;
+}
+
+.summary-scaninfo-val {
+  color: var(--primary);
+  font-weight: 600;
+}
+
 /* File metadata */
 .meta-card {
   background: var(--surface);
@@ -1215,11 +1259,32 @@ html[data-theme="dark"] .nav-link:hover {
   padding: 1rem;
 }
 
+.ref2d-section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  margin-top: 1rem;
+}
+
+.ref2d-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.snapshot-pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
 .snapshot-row {
   display: flex;
   flex-direction: column;
   gap: 0.3rem;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0;
 }
 .snapshot-row:last-child { margin-bottom: 0; }
 
@@ -1237,6 +1302,41 @@ html[data-theme="dark"] .nav-link:hover {
   display: block;
   object-fit: contain;
   border: 1px solid var(--border);
+}
+
+/* ── SLICE INFO BAR (overlay at bottom of image) ────────── */
+.slice-infobar {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  gap: 1.25rem;
+  padding: 0.35rem 0.65rem;
+  background: rgba(0, 0, 0, 0.62);
+  backdrop-filter: blur(4px);
+  border-radius: 0 0 6px 6px;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  pointer-events: none;
+}
+
+.slice-infobar-item {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.slice-infobar-lbl {
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-size: 0.65rem;
+}
+
+.slice-infobar-val {
+  color: #8CE924;
+  font-weight: 600;
 }
 
 /* ── SLICE LIGHTBOX ──────────────────────────────────────── */

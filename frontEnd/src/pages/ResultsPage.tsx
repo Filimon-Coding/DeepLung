@@ -95,19 +95,6 @@ function ResultsPage() {
   return (
     <div className="results-container">
 
-      {/* ── Header ──────────────────────────────────────────────── */}
-      <div className="results-header results-header--compact">
-        <h1 className="results-title">Analysis Results</h1>
-        <div className={`prediction-badge ${badgeClass}`}>
-          <span className="badge-dot" />
-          {r.prediction.toUpperCase()}
-        </div>
-        <p className="results-meta">
-          {r.filename && <span>{r.filename} · </span>}
-          Confidence {pct(r.confidence)}
-        </p>
-      </div>
-
       {/* ── Main layout ─────────────────────────────────────────── */}
       <div className="results-main">
 
@@ -124,6 +111,18 @@ function ResultsPage() {
           </div>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+            {/* Analysis header in 2-D fallback path */}
+            <div className="results-header results-header--compact">
+              <h1 className="results-title">Analysis Results</h1>
+              <div className={`prediction-badge ${badgeClass}`}>
+                <span className="badge-dot" />
+                {r.prediction.toUpperCase()}
+              </div>
+              <p className="results-meta">
+                {r.filename && <span>{r.filename} · </span>}
+                Confidence {pct(r.confidence)}
+              </p>
+            </div>
             {/* 2-D slice + heatmap overlay */}
             <div className="results-images">
 
@@ -189,8 +188,55 @@ function ResultsPage() {
           </div>
         )}
 
-        {/* Right: AI metrics + thumbnails + meta */}
+        {/* Right: analysis card + meta + AI metrics in one row */}
         <div className="results-side">
+
+          {/* Analysis result card */}
+          <div className="results-summary-card">
+            <h2 className="results-title" style={{ fontSize: "1.25rem", marginBottom: "0.5rem" }}>Analysis Results</h2>
+            <div className={`prediction-badge ${badgeClass}`}>
+              <span className="badge-dot" />
+              {r.prediction.toUpperCase()}
+            </div>
+            <p className="results-meta" style={{ marginTop: "0.5rem" }}>
+              Confidence {pct(r.confidence)}
+            </p>
+            {(r.slice_index != null || r.cam_peak_x != null) && (
+              <div className="summary-scaninfo">
+                {r.slice_index != null && r.slice_total != null && (
+                  <div className="summary-scaninfo-row">
+                    <span className="summary-scaninfo-lbl">Axial</span>
+                    <span className="summary-scaninfo-val">{r.slice_index} / {r.slice_total}</span>
+                  </div>
+                )}
+                {r.cam_peak_x != null && r.cam_peak_y != null && r.cam_peak_z != null && (
+                  <div className="summary-scaninfo-row">
+                    <span className="summary-scaninfo-lbl">Peak</span>
+                    <span className="summary-scaninfo-val">x:{r.cam_peak_x} y:{r.cam_peak_y} z:{r.cam_peak_z}</span>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {r.filename && (
+            <div className="meta-card">
+              <div className="meta-item">
+                <p className="meta-label">Filename</p>
+                <p className="meta-value">{r.filename}</p>
+              </div>
+              {r.size_bytes > 0 && (
+                <div className="meta-item">
+                  <p className="meta-label">File size</p>
+                  <p className="meta-value">{fmtBytes(r.size_bytes)}</p>
+                </div>
+              )}
+              <div className="meta-item">
+                <p className="meta-label">Format</p>
+                <p className="meta-value">{r.content_type || "application/gzip"}</p>
+              </div>
+            </div>
+          )}
 
           <div className="confidence-card">
             <p className="confidence-label">Model Confidence</p>
@@ -224,74 +270,77 @@ function ResultsPage() {
             </div>
           </div>
 
-          {/* 2-D thumbnails in side panel when 3-D viewer is active */}
-          {niftiFile && (r.slice_base64 || r.heatmap_base64) && (
-            <div className="side-snapshots">
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.5rem" }}>
-                <p className="confidence-label" style={{ margin: 0 }}>2-D Reference</p>
-                {r.heatmap_base64 && (
-                  <button
-                    className={`heatmap-toggle-btn${showHeatmap ? " active" : ""}`}
-                    onClick={() => setShowHeatmap((v) => !v)}
-                  >
-                    {showHeatmap ? "Hide Heatmap" : "Show Heatmap"}
-                  </button>
-                )}
-              </div>
-
-              {r.slice_base64 && (
-                <div className="snapshot-row">
-                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.3rem" }}>
-                    <span className="snapshot-label" style={{ marginBottom: 0 }}>Axial slice</span>
-                    <button
-                      className="snapshot-expand-btn"
-                      title="View fullscreen"
-                      onClick={() => setLightboxOpen(true)}
-                    >
-                      ⛶ Fullscreen
-                    </button>
-                  </div>
-                  <div className="slice-overlay-wrap">
-                    <img src={`data:image/png;base64,${r.slice_base64}`} alt="axial slice"
-                      className="slice-base snapshot-img" />
-                    {r.heatmap_base64 && (
-                      <img src={`data:image/png;base64,${r.heatmap_base64}`} alt="overlay"
-                        className="slice-heatmap"
-                        style={{ opacity: showHeatmap ? 0.6 : 0 }} />
-                    )}
-                  </div>
-                </div>
-              )}
-              {r.heatmap_base64 && (
-                <div className="snapshot-row">
-                  <span className="snapshot-label">Grad-CAM only</span>
-                  <img src={`data:image/png;base64,${r.heatmap_base64}`} alt="Grad-CAM"
-                    className="snapshot-img" />
-                </div>
-              )}
-            </div>
-          )}
-
-          {r.filename && (
-            <div className="meta-card">
-              <div className="meta-item">
-                <p className="meta-label">Filename</p>
-                <p className="meta-value">{r.filename}</p>
-              </div>
-              {r.size_bytes > 0 && (
-                <div className="meta-item">
-                  <p className="meta-label">File size</p>
-                  <p className="meta-value">{fmtBytes(r.size_bytes)}</p>
-                </div>
-              )}
-              <div className="meta-item">
-                <p className="meta-label">Format</p>
-                <p className="meta-value">{r.content_type || "application/gzip"}</p>
-              </div>
-            </div>
-          )}
         </div>
       </div>
+
+      {/* ── 2-D Reference — full width below main grid ─────────── */}
+      {niftiFile && (r.slice_base64 || r.heatmap_base64) && (
+        <div className="ref2d-section">
+          <div className="ref2d-header">
+            <p className="confidence-label" style={{ margin: 0 }}>2-D Reference</p>
+            {r.heatmap_base64 && (
+              <button
+                className={`heatmap-toggle-btn${showHeatmap ? " active" : ""}`}
+                onClick={() => setShowHeatmap((v) => !v)}
+              >
+                {showHeatmap ? "Hide Heatmap" : "Show Heatmap"}
+              </button>
+            )}
+          </div>
+          <div className="snapshot-pair">
+            {r.slice_base64 && (
+              <div className="snapshot-row">
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.3rem" }}>
+                  <span className="snapshot-label" style={{ marginBottom: 0 }}>Axial slice</span>
+                  <button
+                    className="snapshot-expand-btn"
+                    title="View fullscreen"
+                    onClick={() => setLightboxOpen(true)}
+                  >
+                    ⛶ Fullscreen
+                  </button>
+                </div>
+                <div className="slice-overlay-wrap">
+                  <img src={`data:image/png;base64,${r.slice_base64}`} alt="axial slice"
+                    className="slice-base snapshot-img" />
+                  {r.heatmap_base64 && (
+                    <img src={`data:image/png;base64,${r.heatmap_base64}`} alt="overlay"
+                      className="slice-heatmap"
+                      style={{ opacity: showHeatmap ? 0.6 : 0 }} />
+                  )}
+                  {r.slice_index != null && r.slice_total != null && (
+                    <div className="slice-infobar">
+                      <span className="slice-infobar-item">
+                        <span className="slice-infobar-lbl">Axial</span>
+                        <span className="slice-infobar-val">{r.slice_index} / {r.slice_total}</span>
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+            {r.heatmap_base64 && (
+              <div className="snapshot-row">
+                <span className="snapshot-label">Grad-CAM only</span>
+                <div className="slice-overlay-wrap">
+                  <img src={`data:image/png;base64,${r.heatmap_base64}`} alt="Grad-CAM"
+                    className="snapshot-img" />
+                  {r.cam_peak_x != null && r.cam_peak_y != null && r.cam_peak_z != null && (
+                    <div className="slice-infobar">
+                      <span className="slice-infobar-item">
+                        <span className="slice-infobar-lbl">Peak</span>
+                        <span className="slice-infobar-val">
+                          x:{r.cam_peak_x} y:{r.cam_peak_y} z:{r.cam_peak_z}
+                        </span>
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* ── Footer ──────────────────────────────────────────────── */}
       <div className="disclaimer-box">

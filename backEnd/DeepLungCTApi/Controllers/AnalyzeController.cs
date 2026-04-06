@@ -126,6 +126,11 @@ public class AnalyzeController : ControllerBase
             MiddleSliceB64  = record.SliceBase64,
             GradcamB64      = record.HeatmapBase64,
             GradcamNiftiB64 = record.GradcamNiftiB64,
+            SliceIndex      = py.SliceIndex,
+            SliceTotal      = py.SliceTotal,
+            CamPeakX        = py.CamPeakX,
+            CamPeakY        = py.CamPeakY,
+            CamPeakZ        = py.CamPeakZ,
         });
     }
 }
