@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("DeepLungCTApi")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+e03a313e718409457ec93fa230119dfe49aa8900")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+2f2a9a160c6f97ce4754ef5c1189ea016ec54faf")]
 [assembly: System.Reflection.AssemblyProductAttribute("DeepLungCTApi")]
 [assembly: System.Reflection.AssemblyTitleAttribute("DeepLungCTApi")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

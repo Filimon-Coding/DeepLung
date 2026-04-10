@@ -94,12 +94,6 @@ function HomePage() {
         </div>
       </section>
 
-      {/* ── Disclaimer ───────────────────────────── */}
-      <p className="disclaimer">
-        For research and demonstration purposes only not a certified medical device.
-        Clinical decisions must be made by qualified healthcare professionals.
-      </p>
-
     </div>
   );
 }
