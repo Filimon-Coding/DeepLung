@@ -1,8 +1,0 @@
-fastapi
-uvicorn[standard]
-python-multipart
-torch
-torchio
-SimpleITK
-numpy
-Pillow

@@ -96,6 +96,7 @@ frontEnd/src
 │   ├── admin
 │   │   ├── AccessRequestsPage.tsx
 │   │   ├── AdminDashboard.tsx
+│   │   ├── SystemMonitorPage.tsx
 │   │   └── UsersPage.tsx
 │   ├── AnalyzePage.tsx
 │   ├── ChangePasswordPage.tsx
@@ -103,6 +104,7 @@ frontEnd/src
 │   ├── HomePage.tsx
 │   ├── LoginPage.tsx
 │   ├── RegisterPage.tsx
+│   ├── RequestAccessPage.tsx
 │   └── ResultsPage.tsx
 ├── routers
 │   ├── AdminRoute.tsx
@@ -121,7 +123,7 @@ backEnd
 │   │   ├── AccessRequestsController.cs
 │   │   ├── AdminController.cs
 │   │   ├── AnalyzeController.cs
-│   │   ├── AnalysisHistoryController.cs
+│   │   ├── Analysishistorycontroller.cs
 │   │   └── AuthController.cs
 │   ├── Data
 │   │   └── AppDbContext.cs
@@ -137,7 +139,7 @@ backEnd
 │   ├── Program.cs
 │   ├── appsettings.json
 │   └── deeplungct.db
-└── pythonService
+└── inferenceService
     ├── app.py
     ├── infer.py
     ├── model.py
@@ -211,6 +213,7 @@ Routes in the project:
 * `/` → HomePage
 * `/login` → LoginPage
 * `/register` → RegisterPage (access request form)
+* `/request-access` → RequestAccessPage
 * `/change-password` → ChangePasswordPage
 * `/analyze` → AnalyzePage *(protected)*
 * `/results` → ResultsPage *(protected)*
@@ -218,6 +221,7 @@ Routes in the project:
 * `/admin` → AdminDashboard *(admin only)*
 * `/admin/requests` → AccessRequestsPage *(admin only)*
 * `/admin/users` → UsersPage *(admin only)*
+* `/admin/monitor` → SystemMonitorPage *(admin only)*
 
 ---
 
@@ -527,6 +531,7 @@ Responsibilities:
 * show navigation cards linking to:
   * Access Requests
   * Users
+  * System Monitor
 
 Only visible in the navbar when the user has `role === "admin"`.
 
@@ -568,6 +573,18 @@ Responsibilities:
 * delete a user account (e.g. when an employee leaves)
 * reset a user's password
 * search/filter users
+
+---
+
+### `pages/admin/SystemMonitorPage.tsx`
+
+The admin system monitoring page, accessible at `/admin/monitor`.
+
+Responsibilities:
+
+* display system-wide usage statistics (total users, total analyses, pending requests)
+* show admin activity logs with user info and analysis result summaries
+* display service health status for backend and Python inference service
 
 ---
 
@@ -694,7 +711,7 @@ Responsibilities:
 
 ### `Controllers/AdminController.cs`
 
-Handles user management for admins.
+Handles user management and system monitoring for admins.
 
 Endpoints:
 
@@ -702,6 +719,9 @@ Endpoints:
 * `PUT /api/admin/users/{id}` — update user fields
 * `DELETE /api/admin/users/{id}` — delete a user account
 * `POST /api/admin/users/{id}/reset-password` — set a new password for a user
+* `GET /api/admin/stats` — system-wide usage statistics
+* `GET /api/admin/logs` — admin activity logs with user info and analysis results
+* `GET /api/admin/health` — service health status
 
 All endpoints require admin role.
 
@@ -921,8 +941,9 @@ Responsibilities:
 * run the PyTorch model
 * compute probabilities
 * choose prediction class
-* generate Grad-CAM
-* generate middle-slice image
+* generate Grad-CAM heatmap and NIfTI Grad-CAM export
+* generate full-resolution axial middle-slice image
+* compute Grad-CAM peak activation coordinates (x, y, z) in 128³ space
 * return all outputs as Python dictionary
 
 ---
@@ -1055,6 +1076,7 @@ Lists Python packages required for the service:
    * **Edit** — update name, email, mobile, position, or role.
    * **Reset password** — set a new temporary password and mark `MustChangePassword = true`.
    * **Delete** — permanently remove the account (used when an employee leaves).
+4. Admin can navigate to **Dashboard → System Monitor** to view usage statistics, activity logs, and service health.
 
 ---
 

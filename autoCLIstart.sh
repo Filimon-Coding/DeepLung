@@ -29,8 +29,8 @@ gnome-terminal \
 
 # --- Python service ---
 gnome-terminal \
-  --title="pythonService (FastAPI)" \
-  -- bash -lc "cd \"$BASE_DIR/backEnd/pythonService\" \
+  --title="inferenceService (FastAPI)" \
+  -- bash -lc "cd \"$BASE_DIR/backEnd/inferenceService\" \
   && echo '>>> In $(pwd)' \
   && source .venv/bin/activate \
   && uvicorn app:app --host 127.0.0.1 --port 8001 --reload \
