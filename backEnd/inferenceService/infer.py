@@ -2,6 +2,8 @@ import os
 import tempfile
 import io
 import base64
+import datetime
+import pathlib
 import numpy as np
 import torch
 import torch.nn.functional as F
@@ -254,3 +256,108 @@ def predict(model: torch.nn.Module, device: torch.device, nifti_bytes: bytes) ->
         "cam_peak_y": int(py),
         "cam_peak_z": int(pz),
     }
+
+
+def extract_nifti_patient_info(nifti_bytes: bytes) -> dict:
+    """
+    Reads NIfTI header fields that may contain patient/study metadata.
+    Most public/test NIfTI files leave these blank; real DICOM-derived
+    files may populate descrip, db_name, aux_file, etc.
+    """
+    tmp_path = None
+    info = {"patient_id": "N/A", "study_description": "N/A", "aux_file": "N/A"}
+    try:
+        import nibabel as nib
+        with tempfile.NamedTemporaryFile(suffix=".nii.gz", delete=False) as tmp:
+            tmp.write(nifti_bytes)
+            tmp_path = tmp.name
+        img = nib.load(tmp_path)
+        hdr = img.header
+        descrip = hdr.get("descrip", b"").tobytes().decode("utf-8", errors="ignore").strip("\x00").strip()
+        db_name = hdr.get("db_name", b"").tobytes().decode("utf-8", errors="ignore").strip("\x00").strip()
+        aux_file = hdr.get("aux_file", b"").tobytes().decode("utf-8", errors="ignore").strip("\x00").strip()
+        if db_name:
+            info["patient_id"] = db_name
+        if descrip:
+            info["study_description"] = descrip
+        if aux_file:
+            info["aux_file"] = aux_file
+    except Exception:
+        pass
+    finally:
+        if tmp_path and os.path.exists(tmp_path):
+            os.remove(tmp_path)
+    return info
+
+
+def count_nodule_candidates(cam_3d: np.ndarray, threshold: float = 0.4) -> int:
+    """
+    Counts the number of distinct high-activation clusters in the Grad-CAM
+    volume as a proxy for the number of suspicious nodule regions.
+    Uses scipy connected-components; falls back to 1 if scipy is unavailable.
+    """
+    try:
+        from scipy import ndimage
+        binary_mask = cam_3d >= threshold
+        _, n_clusters = ndimage.label(binary_mask)
+        return max(0, n_clusters)
+    except ImportError:
+        # Fallback: report 1 if any activation above threshold exists
+        return 1 if float(cam_3d.max()) >= threshold else 0
+
+
+_MD_HEADER = (
+    "| # | Timestamp | Filename | Patient ID | Study Description "
+    "| Nodules (CAM) | Benign % | Malignancy % | Prediction | Confidence % "
+    "| CAM Peak (x, y, z) |\n"
+    "|---|-----------|----------|------------|------------------"
+    "|--------------|---------|--------------|------------|-------------|"
+    "--------------------|"
+)
+
+
+def append_prediction_log(
+    md_path: str,
+    filename: str,
+    patient_info: dict,
+    n_nodules: int,
+    result: dict,
+) -> None:
+    """Appends one row to the prediction log markdown table."""
+    md_file = pathlib.Path(md_path)
+    md_file.parent.mkdir(parents=True, exist_ok=True)
+
+    # Count existing data rows to assign a sequential number
+    existing_rows = 0
+    if md_file.exists():
+        content = md_file.read_text(encoding="utf-8")
+        # Rows start with "| <digit>"
+        existing_rows = sum(
+            1 for line in content.splitlines()
+            if line.startswith("|") and not line.startswith("| #") and not line.startswith("|---")
+        )
+
+    ts = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    row_num = existing_rows + 1
+    benign_pct = f"{result['prob_benign'] * 100:.1f}%"
+    mal_pct = f"{result['prob_malignancy'] * 100:.1f}%"
+    confidence_pct = f"{result['confidence'] * 100:.1f}%"
+    location = f"({result['cam_peak_x']}, {result['cam_peak_y']}, {result['cam_peak_z']})"
+    prediction = result["prediction"]
+    patient_id = patient_info.get("patient_id", "N/A") or "N/A"
+    study_desc = patient_info.get("study_description", "N/A") or "N/A"
+
+    new_row = (
+        f"| {row_num} | {ts} | {filename} | {patient_id} | {study_desc} "
+        f"| {n_nodules} | {benign_pct} | {mal_pct} | {prediction} | {confidence_pct} "
+        f"| {location} |"
+    )
+
+    if not md_file.exists() or md_file.stat().st_size == 0:
+        md_file.write_text(
+            "# Prediction Output Log\n\n" + _MD_HEADER + "\n" + new_row + "\n",
+            encoding="utf-8",
+        )
+    else:
+        with md_file.open("a", encoding="utf-8") as f:
+            f.write(new_row + "\n")
