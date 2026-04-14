@@ -28,7 +28,8 @@ public class AnalyzeController : ControllerBase
 
     [HttpPost("analyze")]
     [Consumes("multipart/form-data")]
-    [RequestSizeLimit(200_000_000)]
+    [RequestSizeLimit(500_000_000)]
+    [RequestFormLimits(MultipartBodyLengthLimit = 500_000_000)]
     public async Task<ActionResult<AnalyzeResponse>> Analyze([FromForm] AnalyzeUploadRequest request)
     {
         var file = request.File;
