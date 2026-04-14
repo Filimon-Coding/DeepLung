@@ -41,6 +41,7 @@ nifti_output_python
 .venv/
 .venv
 testData
+backEnd/inferenceService/FileData/*
 
 
 
