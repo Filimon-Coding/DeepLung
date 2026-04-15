@@ -62,3 +62,8 @@
 | 58 | 2026-04-14 21:29:26 | LIDC-IDRI-0305_CT.nii.gz | N/A | CT from 2.000000-NA-45028 | 1 | 5.5% | 94.5% | Malignancy | 94.5% | (88, 23, 103) |
 | 59 | 2026-04-14 21:29:29 | LIDC-IDRI-0306_CT.nii.gz | N/A | CT from NA-18860 | 1 | 2.0% | 98.0% | Malignancy | 98.0% | (40, 0, 56) |
 | 60 | 2026-04-14 21:29:33 | LIDC-IDRI-0307_CT.nii.gz | N/A | CT from 2.000000-NA-38498 | 1 | 5.1% | 94.9% | Malignancy | 94.9% | (55, 0, 71) |
+| 61 | 2026-04-15 15:37:11 | LIDC-IDRI-0306_CT.nii.gz | N/A | CT from NA-18860 | 1 | 2.0% | 98.0% | Malignancy | 98.0% | (40, 0, 56) |
+| 62 | 2026-04-15 15:38:12 | LIDC-IDRI-0028_CT.nii.gz | N/A | CT from 3000563.000000-NA-52671 | 1 | 0.9% | 99.1% | Malignancy | 99.1% | (87, 23, 88) |
+| 63 | 2026-04-15 15:39:02 | LIDC-IDRI-0100_CT.nii.gz | N/A | CT from 4.000000-Recon 3 CHEST 5X5-98181 | 1 | 1.3% | 98.7% | Malignancy | 98.7% | (87, 0, 103) |
+| 64 | 2026-04-15 15:39:47 | LIDC-IDRI-0257_CT.nii.gz | N/A | CT from 4.000000-Recon 3 C-A-P-11671 | 1 | 20.4% | 79.6% | Malignancy | 79.6% | (40, 0, 56) |
+| 65 | 2026-04-15 16:54:23 | LIDC-IDRI-0001_CT.nii.gz | N/A | CT from 3000566.000000-NA-03192 | 1 | 19.1% | 80.9% | Malignancy | 80.9% | (40, 0, 55) |
