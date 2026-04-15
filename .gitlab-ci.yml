@@ -41,6 +41,9 @@ train_gpu:
     - apt-get install -y --no-install-recommends git git-lfs
     - rm -rf /var/lib/apt/lists/*
     - git lfs pull
+    - git fetch origin data-upload
+    - git checkout origin/data-upload -- Data
+    - mv Data underdev3/Data
 
   script:
     - cd underdev3
