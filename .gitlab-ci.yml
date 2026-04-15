@@ -28,6 +28,7 @@ smoke_test:
 
 train_gpu:
   stage: train
+  timeout: 10 hours
   rules:
     - when: manual
       allow_failure: true
