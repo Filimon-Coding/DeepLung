@@ -40,9 +40,9 @@ train_gpu:
     - apt-get update
     - apt-get install -y --no-install-recommends git git-lfs
     - rm -rf /var/lib/apt/lists/*
-    - git lfs pull
     - git fetch origin data-upload
     - git checkout origin/data-upload -- Data
+    - git lfs pull --include="Data/**"
     - mv Data underdev3/Data
 
   script:
