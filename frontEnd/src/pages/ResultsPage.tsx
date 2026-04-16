@@ -343,9 +343,13 @@ function ResultsPage() {
       )}
 
       {/* ── Footer ──────────────────────────────────────────────── */}
+
+    {/*
       <div className="disclaimer-box">
         ⚠ This AI model is decision-support only and must not replace clinical judgement or formal diagnosis.
       </div>
+*/}
+      
 
       <div className="results-actions" style={{ marginTop: "1.5rem" }}>
         <button className="btn-primary" onClick={() => navigate("/analyze")}>

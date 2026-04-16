@@ -57,7 +57,12 @@ export async function fetchHistoryDetail(id: number): Promise<AnalyzeResponse> {
     slice_base64:      d.sliceBase64     ?? d.slice_base64    ?? null,
     heatmap_base64:    d.heatmapBase64   ?? d.heatmap_base64  ?? null,
     gradcam_nifti_b64: d.gradcamNiftiB64 ?? d.gradcam_nifti_b64 ?? null,
-    has_nifti:         d.hasNifti        ?? d.has_nifti       ?? false,
+    has_nifti:         d.hasNifti        ?? d.has_nifti        ?? false,
+    slice_index:       d.sliceIndex      ?? d.slice_index,
+    slice_total:       d.sliceTotal      ?? d.slice_total,
+    cam_peak_x:        d.camPeakX        ?? d.cam_peak_x,
+    cam_peak_y:        d.camPeakY        ?? d.cam_peak_y,
+    cam_peak_z:        d.camPeakZ        ?? d.cam_peak_z,
   };
 }
 

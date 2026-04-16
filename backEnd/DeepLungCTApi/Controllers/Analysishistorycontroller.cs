@@ -69,6 +69,11 @@ public class AnalysisHistoryController(AppDbContext db) : ControllerBase
             item.SliceBase64,
             item.HeatmapBase64,
             item.GradcamNiftiB64,
+            item.SliceIndex,
+            item.SliceTotal,
+            item.CamPeakX,
+            item.CamPeakY,
+            item.CamPeakZ,
             item.CreatedAtUtc,
             HasNifti = item.NiftiStorePath != null,
         });

@@ -26,6 +26,13 @@ public class AnalysisResult
     // 3-D Grad-CAM NIfTI (small volume, stored as base64 text)
     public string? GradcamNiftiB64 { get; set; }
 
+    // Slice / Grad-CAM spatial metadata from the Python inference
+    public int SliceIndex { get; set; }
+    public int SliceTotal { get; set; }
+    public int CamPeakX  { get; set; }
+    public int CamPeakY  { get; set; }
+    public int CamPeakZ  { get; set; }
+
     // Path to the original uploaded NIfTI file saved on disk
     public string? NiftiStorePath { get; set; }
 

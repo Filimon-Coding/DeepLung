@@ -107,6 +107,11 @@ public class AnalyzeController : ControllerBase
             SliceBase64     = py.MiddleSliceB64,
             HeatmapBase64   = py.GradcamB64,
             GradcamNiftiB64 = py.GradcamNiftiB64,
+            SliceIndex      = py.SliceIndex,
+            SliceTotal      = py.SliceTotal,
+            CamPeakX        = py.CamPeakX,
+            CamPeakY        = py.CamPeakY,
+            CamPeakZ        = py.CamPeakZ,
             NiftiStorePath  = storePath,
             CreatedAtUtc    = DateTime.UtcNow,
         };

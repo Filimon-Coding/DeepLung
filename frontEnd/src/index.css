@@ -1149,18 +1149,18 @@ html[data-theme="dark"] .nav-link:hover {
 }
 
 .results-main {
+  display: grid;
+  grid-template-columns: 1fr 290px;   /* viewer left, stats panel right */
+  gap: 1.25rem;
+  margin-bottom: 1rem;
+  align-items: start;
+}
+
+.results-side {
   display: flex;
   flex-direction: column;
   gap: 1rem;
-  margin-bottom: 1rem;
-}
-
-/* When the 3-D viewer is present, show stats in a horizontal row below it */
-.results-side {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 1rem;
-  align-items: start;
+  align-items: stretch;
 }
 
 .results-viewer-box {
@@ -1554,19 +1554,22 @@ body.nv-is-fullscreen .navbar { display: none; }
 /* Canvas */
 .nv-canvas-wrap {
   position: relative;
-  flex: 1;
   width: 100%;
-  display: block;
+  display: flex;
+  justify-content: center;
 }
 
 .nv-canvas {
-  width: 100% !important;
-  height: clamp(520px, 70vh, 900px);
+  /* Square: never wider than container, never taller than 75 vh */
+  width: min(100%, 75vh) !important;
+  aspect-ratio: 1 / 1;
   display: block !important;
   background: #060708;
 }
 
 .nv-fullscreen .nv-canvas {
+  width: 100% !important;
+  aspect-ratio: auto;
   height: calc(100vh - 100px); /* toolbar (~50px) + inspector (~50px) */
 }
 
@@ -2499,6 +2502,7 @@ html[data-theme="dark"] {
     padding-right: 1rem;
   }
   .results-images { grid-template-columns: 1fr; }
+  .results-main   { grid-template-columns: 1fr; }
   .hero-title     { font-size: 2rem; }
   .dropdown       { right: 0.75rem; left: 0.75rem; }
 }
