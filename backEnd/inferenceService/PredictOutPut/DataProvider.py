@@ -3,10 +3,14 @@ DataProvider.py
 ---------------
 CLI test script: runs inference on 30 malignant + 30 benign LIDC-IDRI cases,
 calls the local FastAPI /analyze endpoint, and writes results to
-PredictOutPut/PredicationOutPut.md.
+PredictOutPut/DataProviderOutPut.md.
+
+Cases selected are completely unseen — not used in training or testing.
+Ground truth source: underdev3/list3.2.csv (cases in CSV = Malignancy,
+cases not in CSV = Benign). Verified against training folder labels.
 
 Usage (inference service must be running on port 8001):
-    python DataProvider.py [--url http://127.0.0.1:8001] [--output PredicationOutPut.md]
+    python DataProvider.py [--url http://127.0.0.1:8001] [--output DataProviderOutPut.md]
 """
 
 import argparse
@@ -16,75 +20,78 @@ import datetime
 import requests
 
 # ---------------------------------------------------------------------------
-# Case lists — first 30 from each source file
+# Case lists — unseen cases (not in training or test split)
+# Labels derived from underdev3/list3.2.csv:
+#   in CSV  → Malignancy (confirmed malignant nodule)
+#   not in CSV → Benign (no malignant nodule)
 # ---------------------------------------------------------------------------
 
 MALIGNANT_CASES = [
-    "LIDC-IDRI-0001",
-    "LIDC-IDRI-0002",
-    "LIDC-IDRI-0003",
-    "LIDC-IDRI-0004",
-    "LIDC-IDRI-0005",
-    "LIDC-IDRI-0006",
-    "LIDC-IDRI-0007",
-    "LIDC-IDRI-0009",
-    "LIDC-IDRI-0010",
-    "LIDC-IDRI-0011",
-    "LIDC-IDRI-0012",
-    "LIDC-IDRI-0013",
-    "LIDC-IDRI-0015",
-    "LIDC-IDRI-0017",
-    "LIDC-IDRI-0019",
-    "LIDC-IDRI-0020",
-    "LIDC-IDRI-0021",
-    "LIDC-IDRI-0022",
-    "LIDC-IDRI-0023",
-    "LIDC-IDRI-0024",
-    "LIDC-IDRI-0025",
-    "LIDC-IDRI-0026",
-    "LIDC-IDRI-0027",
-    "LIDC-IDRI-0031",
-    "LIDC-IDRI-0033",
-    "LIDC-IDRI-0034",
-    "LIDC-IDRI-0035",
-    "LIDC-IDRI-0037",
-    "LIDC-IDRI-0038",
-    "LIDC-IDRI-0039",
+    # Diverse spread across case numbers 106–962 (all unseen by model)
+    "LIDC-IDRI-0106",
+    "LIDC-IDRI-0132",
+    "LIDC-IDRI-0158",
+    "LIDC-IDRI-0184",
+    "LIDC-IDRI-0212",
+    "LIDC-IDRI-0244",
+    "LIDC-IDRI-0271",
+    "LIDC-IDRI-0299",
+    "LIDC-IDRI-0329",
+    "LIDC-IDRI-0360",
+    "LIDC-IDRI-0390",
+    "LIDC-IDRI-0420",
+    "LIDC-IDRI-0450",
+    "LIDC-IDRI-0478",
+    "LIDC-IDRI-0504",
+    "LIDC-IDRI-0538",
+    "LIDC-IDRI-0568",
+    "LIDC-IDRI-0598",
+    "LIDC-IDRI-0631",
+    "LIDC-IDRI-0660",
+    "LIDC-IDRI-0695",
+    "LIDC-IDRI-0724",
+    "LIDC-IDRI-0754",
+    "LIDC-IDRI-0783",
+    "LIDC-IDRI-0811",
+    "LIDC-IDRI-0836",
+    "LIDC-IDRI-0864",
+    "LIDC-IDRI-0898",
+    "LIDC-IDRI-0929",
+    "LIDC-IDRI-0962",
 ]
 
 BENIGN_CASES = [
-    # Section 1 — has nodules ≥3mm but all rated benign
-    "LIDC-IDRI-0265",
-    # Section 2 — no nodules ≥3mm (first 29 to reach total of 30)
-    "LIDC-IDRI-0028",
-    "LIDC-IDRI-0032",
-    "LIDC-IDRI-0062",
-    "LIDC-IDRI-0071",
-    "LIDC-IDRI-0100",
-    "LIDC-IDRI-0143",
-    "LIDC-IDRI-0174",
-    "LIDC-IDRI-0189",
-    "LIDC-IDRI-0197",
-    "LIDC-IDRI-0205",
-    "LIDC-IDRI-0214",
-    "LIDC-IDRI-0218",
-    "LIDC-IDRI-0224",
-    "LIDC-IDRI-0225",
-    "LIDC-IDRI-0226",
-    "LIDC-IDRI-0239",
-    "LIDC-IDRI-0253",
-    "LIDC-IDRI-0261",
-    "LIDC-IDRI-0279",
-    "LIDC-IDRI-0293",
-    "LIDC-IDRI-0295",
-    "LIDC-IDRI-0300",
-    "LIDC-IDRI-0301",
-    "LIDC-IDRI-0302",
-    "LIDC-IDRI-0303",
-    "LIDC-IDRI-0304",
-    "LIDC-IDRI-0305",
-    "LIDC-IDRI-0306",
-    "LIDC-IDRI-0307",
+    # All 30 come from cases with no malignant nodule (not in list3.2.csv)
+    "LIDC-IDRI-0746",
+    "LIDC-IDRI-0755",
+    "LIDC-IDRI-0760",
+    "LIDC-IDRI-0764",
+    "LIDC-IDRI-0774",
+    "LIDC-IDRI-0784",
+    "LIDC-IDRI-0804",
+    "LIDC-IDRI-0808",
+    "LIDC-IDRI-0839",
+    "LIDC-IDRI-0853",
+    "LIDC-IDRI-0862",
+    "LIDC-IDRI-0876",
+    "LIDC-IDRI-0877",
+    "LIDC-IDRI-0878",
+    "LIDC-IDRI-0881",
+    "LIDC-IDRI-0885",
+    "LIDC-IDRI-0887",
+    "LIDC-IDRI-0889",
+    "LIDC-IDRI-0891",
+    "LIDC-IDRI-0897",
+    "LIDC-IDRI-0900",
+    "LIDC-IDRI-0901",
+    "LIDC-IDRI-0903",
+    "LIDC-IDRI-0906",
+    "LIDC-IDRI-0918",
+    "LIDC-IDRI-0927",
+    "LIDC-IDRI-0930",
+    "LIDC-IDRI-0931",
+    "LIDC-IDRI-0934",
+    "LIDC-IDRI-0937",
 ]
 
 NIFTI_DIR = "/media/neov/NewDisk/NewDownload/ALLNewDicomNifit"
