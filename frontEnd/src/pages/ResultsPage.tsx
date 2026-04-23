@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import type { AnalyzeResponse } from "../api/analyze";
-import { fetchNiftiAsFile } from "../api/History";
+import { fetchNiftiAsFile, fetchGradcamNifti } from "../api/History";
 import NiiVueViewer from "../components/NiiVueViewer";
 
 function pct(n: number): string {
@@ -24,6 +24,10 @@ function ResultsPage() {
   const [niftiFile,     setNiftiFile]     = useState<File | null>(state?.file ?? null);
   const [niftiLoading,  setNiftiLoading]  = useState(false);
   const [niftiError,    setNiftiError]    = useState<string | null>(null);
+
+  // gradcamNiftiB64 is lazy-fetched after result arrives (too large to include in analyze response)
+  const [gradcamNiftiB64,     setGradcamNiftiB64]     = useState<string | null>(null);
+  const [gradcamNiftiLoading, setGradcamNiftiLoading] = useState(false);
 
   // 2-D heatmap overlay toggle
   const [showHeatmap, setShowHeatmap] = useState(true);
@@ -51,6 +55,21 @@ function ResultsPage() {
 
     return () => { cancelled = true; };
   }, [r?.analysis_id, r?.has_nifti]);   // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Lazy-fetch Grad-CAM NIfTI — not included in analyze response (too large for JSON)
+  useEffect(() => {
+    if (!r?.analysis_id || gradcamNiftiB64) return;
+
+    let cancelled = false;
+    setGradcamNiftiLoading(true);
+
+    fetchGradcamNifti(r.analysis_id)
+      .then((b64) => { if (!cancelled) setGradcamNiftiB64(b64); })
+      .catch(() => { /* silently skip — viewer still works without overlay */ })
+      .finally(() => { if (!cancelled) setGradcamNiftiLoading(false); });
+
+    return () => { cancelled = true; };
+  }, [r?.analysis_id]);  // eslint-disable-line react-hooks/exhaustive-deps
 
   if (!r) {
     return (
@@ -106,7 +125,7 @@ function ResultsPage() {
             </div>
             <NiiVueViewer
               niftiFile={niftiFile}
-              gradcamNiftiB64={r.gradcam_nifti_b64 ?? null}
+              gradcamNiftiB64={gradcamNiftiB64}
             />
           </div>
         ) : (

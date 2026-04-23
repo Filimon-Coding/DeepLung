@@ -121,22 +121,22 @@ public class AnalyzeController : ControllerBase
 
         return Ok(new AnalyzeResponse
         {
-            AnalysisId      = record.Id,
-            Filename        = record.Filename,
-            ContentType     = record.ContentType,
-            SizeBytes       = record.SizeBytes,
-            Prediction      = record.Prediction,
-            Confidence      = record.Confidence,
-            ProbBenign      = record.ProbBenign,
-            ProbMalignancy  = record.ProbMalignancy,
-            MiddleSliceB64  = record.SliceBase64,
-            GradcamB64      = record.HeatmapBase64,
-            GradcamNiftiB64 = record.GradcamNiftiB64,
-            SliceIndex      = py.SliceIndex,
-            SliceTotal      = py.SliceTotal,
-            CamPeakX        = py.CamPeakX,
-            CamPeakY        = py.CamPeakY,
-            CamPeakZ        = py.CamPeakZ,
+            AnalysisId     = record.Id,
+            Filename       = record.Filename,
+            ContentType    = record.ContentType,
+            SizeBytes      = record.SizeBytes,
+            Prediction     = record.Prediction,
+            Confidence     = record.Confidence,
+            ProbBenign     = record.ProbBenign,
+            ProbMalignancy = record.ProbMalignancy,
+            MiddleSliceB64 = record.SliceBase64,
+            GradcamB64     = record.HeatmapBase64,
+            // GradcamNiftiB64 intentionally omitted — fetch via GET /api/history/{id}/gradcam-nifti
+            SliceIndex     = py.SliceIndex,
+            SliceTotal     = py.SliceTotal,
+            CamPeakX       = py.CamPeakX,
+            CamPeakY       = py.CamPeakY,
+            CamPeakZ       = py.CamPeakZ,
         });
     }
 }

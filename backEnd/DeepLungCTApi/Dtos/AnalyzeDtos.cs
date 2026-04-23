@@ -65,7 +65,8 @@ public class AnalyzeResponse
 
     public string? MiddleSliceB64 { get; set; }
     public string? GradcamB64 { get; set; }
-    public string? GradcamNiftiB64 { get; set; }
+    // GradcamNiftiB64 is NOT returned here — it is fetched separately via
+    // GET /api/history/{id}/gradcam-nifti to avoid a 60 MB JSON string in this response.
 
     public int SliceIndex { get; set; }
     public int SliceTotal { get; set; }

@@ -79,6 +79,25 @@ public class AnalysisHistoryController(AppDbContext db) : ControllerBase
         });
     }
 
+    /// <summary>Return the Grad-CAM NIfTI as a raw base64 text/plain response.
+    /// Returned as text/plain (not JSON) so System.Text.Json never touches the large string.</summary>
+    [HttpGet("history/{id:int}/gradcam-nifti")]
+    public async Task<IActionResult> GetGradcamNifti(int id)
+    {
+        var userId = GetUserId();
+        if (userId is null) return Unauthorized();
+
+        var b64 = await db.AnalysisResults
+            .Where(r => r.Id == id && r.UserId == userId.Value)
+            .Select(r => r.GradcamNiftiB64)
+            .FirstOrDefaultAsync();
+
+        if (b64 == null) return NotFound();
+        if (string.IsNullOrEmpty(b64)) return NotFound();
+
+        return Content(b64, "text/plain");
+    }
+
     /// <summary>Stream the stored NIfTI file so the frontend can load it in the 3-D viewer.</summary>
     [HttpGet("history/{id:int}/nifti")]
     public async Task<IActionResult> GetNifti(int id)

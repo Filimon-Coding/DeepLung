@@ -38,22 +38,21 @@ def load_model(checkpoint_path: str, device: torch.device) -> torch.nn.Module:
 
 
 def nifti_bytes_to_tensor(nifti_bytes: bytes):
-    """Returns (preprocessed tensor (1,128,128,128), affine (4x4 numpy), original tensor)."""
+    """Returns (preprocessed tensor, preprocessed affine, original tensor, original affine)."""
     tmp_path = None
     try:
         with tempfile.NamedTemporaryFile(suffix=".nii.gz", delete=False) as tmp:
             tmp.write(nifti_bytes)
             tmp_path = tmp.name
 
-        # Load via TorchIO so spatial metadata (affine) is preserved through CropOrPad
         subject = tio.Subject(mri=tio.ScalarImage(tmp_path))
 
-        # Keep a copy of the original (full-resolution) volume for visualization
-        original_tensor = subject.mri.data.clone()  # (1, H, W, D) original size
+        original_tensor = subject.mri.data.clone()        # (1, X, Y, Z) full resolution
+        original_affine = subject.mri.affine.copy()       # affine before any crop/pad
 
         subject = preprocess(subject)
 
-        return subject.mri.data, subject.mri.affine, original_tensor  # (1,128,128,128), (4,4), original
+        return subject.mri.data, subject.mri.affine, original_tensor, original_affine
 
     finally:
         if tmp_path and os.path.exists(tmp_path):
@@ -86,12 +85,16 @@ def compute_gradcam(
         acts = activations["feat"]
         grads = gradients["feat"]
 
-        weights = grads.mean(dim=(2, 3, 4), keepdim=True)
-        cam = (weights * acts).sum(dim=1).squeeze()
-        cam = F.relu(cam)
+        # GradCAM++ weights — sharper localization than plain mean(grads)
+        grads_sq  = grads.pow(2)
+        grads_cb  = grads.pow(3)
+        act_sum   = acts.sum(dim=(2, 3, 4), keepdim=True)
+        alpha     = grads_sq / (2.0 * grads_sq + act_sum * grads_cb + 1e-7)
+        weights   = (alpha * F.relu(grads)).sum(dim=(2, 3, 4), keepdim=True)
+        cam = F.relu((weights * acts).sum(dim=1).squeeze())
 
-        # Upsample small feature-map CAM (e.g. 8x8x8) back to full volume size
-        target_size = tuple(x_batch.shape[2:])   # (128, 128, 128)
+        # Upsample back to input volume size
+        target_size = tuple(x_batch.shape[2:])
         cam_up = F.interpolate(
             cam.detach().cpu().unsqueeze(0).unsqueeze(0),
             size=target_size,
@@ -99,9 +102,15 @@ def compute_gradcam(
             align_corners=False,
         ).squeeze().numpy()
 
-        c_min, c_max = cam_up.min(), cam_up.max()
-        if c_max > c_min:
-            cam_up = (cam_up - c_min) / (c_max - c_min)
+        # Keep only the top 30% of activations so the heatmap covers the nodule,
+        # not the entire lung
+        if cam_up.max() > 0:
+            nonzero = cam_up[cam_up > 0]
+            thr = float(np.percentile(nonzero, 70)) if len(nonzero) > 0 else 0.0
+            cam_up[cam_up < thr] = 0.0
+            c_max = cam_up.max()
+            if c_max > 0:
+                cam_up = cam_up / c_max
 
         return cam_up
 
@@ -195,10 +204,10 @@ def gradcam_overlay_b64(
 
 
 def cam_to_nifti_b64(cam_3d: np.ndarray, affine: np.ndarray | None = None) -> str:
-    """Serialize a 3-D Grad-CAM array (D,H,W) as a .nii file, base64-encoded.
+    """Serialize a 3-D Grad-CAM array as a gzip-compressed .nii.gz, base64-encoded.
 
-    Pass the affine from the preprocessed TorchIO subject so NiiVue can
-    overlay the heatmap in the same world space as the original CT.
+    Using .nii.gz is critical: the full-res CAM volume is mostly zeros after
+    thresholding, so gzip shrinks it from ~300 MB to a few MB.
     """
     import nibabel as nib
 
@@ -207,7 +216,7 @@ def cam_to_nifti_b64(cam_3d: np.ndarray, affine: np.ndarray | None = None) -> st
 
     tmp_path = None
     try:
-        with tempfile.NamedTemporaryFile(suffix=".nii", delete=False) as tmp:
+        with tempfile.NamedTemporaryFile(suffix=".nii.gz", delete=False) as tmp:
             tmp_path = tmp.name
         nib.save(nib_img, tmp_path)
         with open(tmp_path, "rb") as f:
@@ -218,7 +227,7 @@ def cam_to_nifti_b64(cam_3d: np.ndarray, affine: np.ndarray | None = None) -> st
 
 
 def predict(model: torch.nn.Module, device: torch.device, nifti_bytes: bytes) -> dict:
-    volume, affine, original_volume = nifti_bytes_to_tensor(nifti_bytes)
+    volume, affine, original_volume, original_affine = nifti_bytes_to_tensor(nifti_bytes)
     x_batch = volume.unsqueeze(0).to(device)
 
     with torch.no_grad():
@@ -228,19 +237,27 @@ def predict(model: torch.nn.Module, device: torch.device, nifti_bytes: bytes) ->
 
     cam_3d = compute_gradcam(model, x_batch, pred_idx)
 
-    # Use original (full-resolution) volume for the plain slice so it shows the whole scan
+    # Upsample CAM to original CT dimensions so the NIfTI overlay matches exactly —
+    # avoids the bounding-box border artifact NiiVue shows when overlaying a smaller volume
+    orig_shape = tuple(original_volume.shape[1:])   # (X, Y, Z)
+    cam_full = F.interpolate(
+        torch.from_numpy(cam_3d).float().unsqueeze(0).unsqueeze(0),
+        size=orig_shape,
+        mode="trilinear",
+        align_corners=False,
+    ).squeeze().numpy()
+
     orig_vol_np = original_volume.squeeze().numpy()
     slice_total = int(orig_vol_np.shape[2])
     slice_index = slice_total // 2
     slice_b64 = tensor_to_middle_slice_b64(original_volume)
 
-    # Grad-CAM overlay stays in preprocessed 128³ space where CAM was computed
-    gradcam_b64 = gradcam_overlay_b64(cam_3d, volume)
-    gradcam_nifti_b64 = cam_to_nifti_b64(cam_3d, affine)
+    gradcam_b64       = gradcam_overlay_b64(cam_3d, volume)
+    gradcam_nifti_b64 = cam_to_nifti_b64(cam_full, original_affine)  # full-res + original affine
 
-    # Peak Grad-CAM activation — position of strongest signal in 128³ space
-    peak_flat = int(np.argmax(cam_3d))
-    pz, py, px = np.unravel_index(peak_flat, cam_3d.shape)
+    # Peak activation in full-res space
+    peak_flat = int(np.argmax(cam_full))
+    pz, py, px = np.unravel_index(peak_flat, cam_full.shape)
 
     return {
         "prediction": CLASS_NAMES[pred_idx],

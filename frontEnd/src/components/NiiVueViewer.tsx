@@ -42,7 +42,7 @@ export default function NiiVueViewer({ niftiFile, gradcamNiftiB64 }: Props) {
   const [view,       setView]       = useState<ViewMode>("4panel");
   const [preset,     setPreset]     = useState(0);
   const [showCam,    setShowCam]    = useState(true);
-  const [camOpacity, setCamOpacity] = useState(0.45);
+  const [camOpacity, setCamOpacity] = useState(0.72);
   const [loc,        setLoc]        = useState<LocationData | null>(null);
   const [dims,       setDims]       = useState<VolDims | null>(null);
   const [ready,      setReady]      = useState(false);
@@ -113,10 +113,11 @@ export default function NiiVueViewer({ niftiFile, gradcamNiftiB64 }: Props) {
         if (gradcamNiftiB64) {
           const camImage = await NVImage.loadFromBase64({
             base64:   gradcamNiftiB64,
-            name:     "gradcam.nii",
-            colormap: "hot",
-            opacity:  0.45,
-            cal_min:  0.1,
+            name:     "gradcam.nii.gz",
+            colormap: "warm",   // dark-red → orange → bright yellow, more vivid than "hot"
+            opacity:  0.72,
+            cal_min:  0.01,     // 0.0 voxels (background) are transparent; active region starts at 0.3+
+            cal_max:  1.0,
           });
           nv.addVolume(camImage);
         }

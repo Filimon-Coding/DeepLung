@@ -66,6 +66,17 @@ export async function fetchHistoryDetail(id: number): Promise<AnalyzeResponse> {
   };
 }
 
+/** Fetch the Grad-CAM NIfTI base64 string for use in the 3-D viewer overlay. */
+export async function fetchGradcamNifti(id: number): Promise<string> {
+  const res = await fetch(`${API_BASE_URL}/api/history/${id}/gradcam-nifti`, {
+    headers: authHeaders(),
+  });
+
+  if (!res.ok) throw new Error(`Failed to fetch Grad-CAM NIfTI (${res.status})`);
+
+  return await res.text();
+}
+
 /** Fetch the stored NIfTI file and return it as a File object ready for NiiVue. */
 export async function fetchNiftiAsFile(id: number, filename: string): Promise<File> {
   const res = await fetch(`${API_BASE_URL}/api/history/${id}/nifti`, {
