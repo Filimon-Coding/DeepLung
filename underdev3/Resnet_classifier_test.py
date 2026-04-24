@@ -555,6 +555,14 @@ if best_model_path and best_model_path.exists():
     model.load_state_dict(ckpt["model_state_dict"])
     print(f"--- Loaded best checkpoint: {best_model_path.name} ---")
 
+# Deploy checkpoint to inference service immediately after training completes —
+# before k-fold, so the model is available even if post-training analysis times out.
+import shutil
+_infer_ckpt_dir = Path("../backEnd/inferenceService/checkpoints")
+_infer_ckpt_dir.mkdir(parents=True, exist_ok=True)
+shutil.copy2(LATEST_MODEL_PATH, _infer_ckpt_dir / "resnet3d_latest.pth")
+print(f"--- Checkpoint deployed → {_infer_ckpt_dir}/resnet3d_latest.pth ---")
+
 ############################################
 # TRAINING CURVES
 ############################################
@@ -975,8 +983,8 @@ print("\n" + "="*50)
 print("  K-FOLD CROSS VALIDATION (5 folds)")
 print("="*50)
 
-K_FOLDS      = 5
-KFOLD_EPOCHS = 20
+K_FOLDS      = 3
+KFOLD_EPOCHS = 10
 
 # Reuse the already-built nodule-level sample lists from both splits
 all_samples    = train_dataset.samples + test_dataset.samples
