@@ -24,8 +24,15 @@ class BasicBlock3D(nn.Module):
         return F.relu(self.conv(x) + self.shortcut(x))
 
 
+def _make_layer(in_c, out_c, num_blocks=2, stride=1):
+    layers = [BasicBlock3D(in_c, out_c, stride=stride)]
+    for _ in range(1, num_blocks):
+        layers.append(BasicBlock3D(out_c, out_c))
+    return nn.Sequential(*layers)
+
+
 class ResNet3D(nn.Module):
-    def __init__(self):
+    def __init__(self, dropout=0.5):
         super().__init__()
         self.prep = nn.Sequential(
             nn.Conv3d(1, 32, 7, stride=2, padding=3, bias=False),
@@ -33,12 +40,15 @@ class ResNet3D(nn.Module):
             nn.ReLU(inplace=True),
             nn.MaxPool3d(3, stride=2, padding=1),
         )
-        self.layer1 = BasicBlock3D(32,  64)
-        self.layer2 = BasicBlock3D(64,  128, stride=2)
-        self.layer3 = BasicBlock3D(128, 256, stride=2)
+        self.layer1 = _make_layer(32,  64,  num_blocks=2)
+        self.layer2 = _make_layer(64,  128, num_blocks=2, stride=2)
+        self.layer3 = _make_layer(128, 256, num_blocks=2, stride=2)
 
         self.avgpool    = nn.AdaptiveAvgPool3d(1)
-        self.classifier = nn.Linear(256, 2)
+        self.classifier = nn.Sequential(
+            nn.Dropout(dropout),
+            nn.Linear(256, 2),
+        )
 
     def forward(self, x):
         x = self.prep(x)

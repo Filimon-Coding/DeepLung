@@ -15,6 +15,11 @@ from model import ResNet3D
 
 CLASS_NAMES = ["Benign", "Malignancy"]
 
+# Lung CT Hounsfield Unit window — must match training preprocessing.
+# Clips bone (+3000 HU) and outside-body air so RescaleIntensity maps
+# the clinically relevant range [-1000, 400] to [0, 1].
+HU_MIN, HU_MAX = -1000, 400
+
 preprocess = tio.Compose([
     tio.RescaleIntensity(out_min_max=(0, 1)),
     tio.CropOrPad((128, 128, 128)),
@@ -49,6 +54,9 @@ def nifti_bytes_to_tensor(nifti_bytes: bytes):
 
         original_tensor = subject.mri.data.clone()        # (1, X, Y, Z) full resolution
         original_affine = subject.mri.affine.copy()       # affine before any crop/pad
+
+        # Apply lung HU window before normalisation — matches training preprocessing
+        subject.mri.set_data(torch.clamp(subject.mri.data, HU_MIN, HU_MAX))
 
         subject = preprocess(subject)
 
@@ -102,11 +110,11 @@ def compute_gradcam(
             align_corners=False,
         ).squeeze().numpy()
 
-        # Keep only the top 30% of activations so the heatmap covers the nodule,
-        # not the entire lung
+        # Keep only the top 10% of activations (90th percentile threshold).
+        # 30% was still too broad after upsampling to full CT dimensions.
         if cam_up.max() > 0:
             nonzero = cam_up[cam_up > 0]
-            thr = float(np.percentile(nonzero, 70)) if len(nonzero) > 0 else 0.0
+            thr = float(np.percentile(nonzero, 90)) if len(nonzero) > 0 else 0.0
             cam_up[cam_up < thr] = 0.0
             c_max = cam_up.max()
             if c_max > 0:

@@ -28,7 +28,7 @@ smoke_test:
 
 train_gpu:
   stage: train
-  timeout: 48 hours
+  timeout: 96 hours
   rules:
     - when: manual
       allow_failure: true
@@ -41,8 +41,8 @@ train_gpu:
     - apt-get update
     - apt-get install -y --no-install-recommends git git-lfs
     - rm -rf /var/lib/apt/lists/*
-    - git fetch origin data-upload
-    - git checkout origin/data-upload -- Data
+    - git fetch origin allDataUpload
+    - git checkout origin/allDataUpload -- Data
     - git lfs pull --include="Data/**"
     - mv Data underdev3/Data
 
@@ -63,8 +63,14 @@ train_gpu:
 
     - python -u Resnet_classifier_test.py
 
+    # Deploy the trained model to the inference service so it is ready to use
+    - mkdir -p ../backEnd/inferenceService/checkpoints
+    - cp checkpoints/resnet3d_latest.pth ../backEnd/inferenceService/checkpoints/resnet3d_latest.pth
+    - echo "Checkpoint deployed to inferenceService/checkpoints/"
+
   artifacts:
     when: always
     paths:
       - underdev3/checkpoints/
+      - backEnd/inferenceService/checkpoints/resnet3d_latest.pth
     expire_in: 14 days
