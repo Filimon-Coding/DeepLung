@@ -8,8 +8,6 @@ from pathlib import Path
 
 import numpy as np
 import torch
-import torch.multiprocessing
-torch.multiprocessing.set_sharing_strategy('file_system')
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
@@ -52,8 +50,8 @@ LATEST_MODEL_PATH = MODEL_DIR / "resnet3d_latest.pth"
 CROP_SIZE      = (128, 128, 128)
 BATCH_SIZE     = 4
 NUM_EPOCHS     = 60
-NUM_WORKERS    = 4
-PIN_MEMORY     = True
+NUM_WORKERS    = 0
+PIN_MEMORY     = False
 EARLY_STOP_PAT = 10
 
 # Lung CT Hounsfield Unit window.
