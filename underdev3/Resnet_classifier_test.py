@@ -48,10 +48,10 @@ LATEST_MODEL_PATH = MODEL_DIR / "resnet3d_latest.pth"
 # 128³ matches the inference service's CropOrPad((128,128,128)) exactly —
 # same distribution at train time and production time.
 CROP_SIZE      = (128, 128, 128)
-BATCH_SIZE     = 2
+BATCH_SIZE     = 4
 NUM_EPOCHS     = 60
-NUM_WORKERS    = 0
-PIN_MEMORY     = False
+NUM_WORKERS    = 4
+PIN_MEMORY     = True
 EARLY_STOP_PAT = 10
 
 # Lung CT Hounsfield Unit window.
