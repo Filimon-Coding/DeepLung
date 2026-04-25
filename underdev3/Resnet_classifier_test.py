@@ -156,7 +156,6 @@ aug_transform = tio.Compose([
     tio.RandomNoise(std=(0, 0.025)),
     tio.RandomBlur(std=(0, 0.5)),
     tio.RandomGamma(log_gamma=(-0.3, 0.3)),
-    tio.RandomElasticDeformation(num_control_points=7, max_displacement=7),
 ])
 
 ############################################
@@ -188,6 +187,9 @@ class NiiDataset(Dataset):
 
     def _load_and_crop(self, img_path, cx, cy, cz):
         image_np = sitk.GetArrayFromImage(sitk.ReadImage(str(img_path)))
+        # Some NIfTI files have an extra dimension (e.g. 4D scout) — reduce to 3D
+        while image_np.ndim > 3:
+            image_np = image_np[0]
         volume   = torch.from_numpy(image_np).float().unsqueeze(0)
         # SimpleITK: (Z, Y, X) → TorchIO: (C, X, Y, Z)
         volume = volume.permute(0, 3, 2, 1).contiguous()
@@ -229,6 +231,8 @@ class SampleListDataset(Dataset):
 
     def _load_and_crop(self, img_path, cx, cy, cz):
         image_np = sitk.GetArrayFromImage(sitk.ReadImage(str(img_path)))
+        while image_np.ndim > 3:
+            image_np = image_np[0]
         volume   = torch.from_numpy(image_np).float().unsqueeze(0)
         volume   = volume.permute(0, 3, 2, 1).contiguous()
         volume   = torch.nan_to_num(volume, nan=0.0, posinf=0.0, neginf=0.0)
