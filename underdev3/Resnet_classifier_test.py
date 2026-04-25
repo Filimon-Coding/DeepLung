@@ -49,7 +49,7 @@ LATEST_MODEL_PATH = MODEL_DIR / "resnet3d_latest.pth"
 # same distribution at train time and production time.
 CROP_SIZE      = (128, 128, 128)
 BATCH_SIZE     = 4
-NUM_EPOCHS     = 60
+NUM_EPOCHS     = 20
 NUM_WORKERS    = 0
 PIN_MEMORY     = False
 EARLY_STOP_PAT = 10
@@ -988,7 +988,7 @@ print("  K-FOLD CROSS VALIDATION (5 folds)")
 print("="*50)
 
 K_FOLDS      = 3
-KFOLD_EPOCHS = 10
+KFOLD_EPOCHS = 5
 
 # Reuse the already-built nodule-level sample lists from both splits
 all_samples    = train_dataset.samples + test_dataset.samples

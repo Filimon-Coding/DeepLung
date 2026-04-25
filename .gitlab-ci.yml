@@ -74,3 +74,52 @@ train_gpu:
       - underdev3/checkpoints/
       - backEnd/inferenceService/checkpoints/resnet3d_latest.pth
     expire_in: 14 days
+
+train_gpu_fast:
+  stage: train
+  timeout: 48 hours
+  rules:
+    - when: manual
+      allow_failure: true
+  tags:
+    - nvidia-a6000-2
+
+  before_script:
+    - python -V
+    - pip install --upgrade pip
+    - apt-get update
+    - apt-get install -y --no-install-recommends git git-lfs
+    - rm -rf /var/lib/apt/lists/*
+    - git fetch origin allDataUpload
+    - git checkout origin/allDataUpload -- Data
+    - git lfs pull --include="Data/**"
+    - mv Data underdev3/Data
+
+  script:
+    - cd underdev3
+    - pip install -r requirements.txt
+
+    - echo "Listing underdev3 (top level):"
+    - ls -lah . || true
+    - echo "Listing Data (top level):"
+    - ls -lah Data || true
+    - echo "Disk usage for Data:"
+    - du -sh Data || true
+
+    - test -d Data || (echo "Missing underdev3/Data/ folder" && exit 1)
+    - test -d Data/Train || (echo "Missing underdev3/Data/Train" && exit 1)
+    - test -d Data/Test || (echo "Missing underdev3/Data/Test" && exit 1)
+
+    - python -u Resnet_classifier_test.py
+
+    # Deploy the trained model to the inference service so it is ready to use
+    - mkdir -p ../backEnd/inferenceService/checkpoints
+    - cp checkpoints/resnet3d_latest.pth ../backEnd/inferenceService/checkpoints/resnet3d_latest.pth
+    - echo "Checkpoint deployed to inferenceService/checkpoints/"
+
+  artifacts:
+    when: always
+    paths:
+      - underdev3/checkpoints/
+      - backEnd/inferenceService/checkpoints/resnet3d_latest.pth
+    expire_in: 14 days
