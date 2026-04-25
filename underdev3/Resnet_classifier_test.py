@@ -8,6 +8,8 @@ from pathlib import Path
 
 import numpy as np
 import torch
+import torch.multiprocessing
+torch.multiprocessing.set_sharing_strategy('file_system')
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
