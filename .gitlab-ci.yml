@@ -39,7 +39,7 @@ train_gpu:
     - python -V
     - pip install --upgrade pip
     - apt-get update
-    - apt-get install -y --no-install-recommends git git-lfs
+    - apt-get install -y --no-install-recommends git git-lfs curl
     - rm -rf /var/lib/apt/lists/*
     - git fetch origin allDataUpload
     - git checkout origin/allDataUpload -- Data
@@ -88,7 +88,7 @@ train_gpu_fast:
     - python -V
     - pip install --upgrade pip
     - apt-get update
-    - apt-get install -y --no-install-recommends git git-lfs
+    - apt-get install -y --no-install-recommends git git-lfs curl
     - rm -rf /var/lib/apt/lists/*
     - git fetch origin allDataUpload
     - git checkout origin/allDataUpload -- Data

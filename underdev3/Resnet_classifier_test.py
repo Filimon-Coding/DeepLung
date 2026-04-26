@@ -4,6 +4,9 @@ import csv
 import json
 import time
 import random
+import signal
+import sys
+import subprocess
 from pathlib import Path
 
 import numpy as np
@@ -45,14 +48,14 @@ LATEST_MODEL_PATH = MODEL_DIR / "resnet3d_latest.pth"
 ############################################
 # TRAINING SETTINGS
 ############################################
-# 128³ matches the inference service's CropOrPad((128,128,128)) exactly —
+# 96³ matches the inference service's CropOrPad((96,96,96)) exactly —
 # same distribution at train time and production time.
-CROP_SIZE      = (128, 128, 128)
+CROP_SIZE      = (96, 96, 96)
 BATCH_SIZE     = 4
-NUM_EPOCHS     = 20
+NUM_EPOCHS     = 10
 NUM_WORKERS    = 0
 PIN_MEMORY     = False
-EARLY_STOP_PAT = 10
+EARLY_STOP_PAT = 5
 
 # Lung CT Hounsfield Unit window.
 # Clips bone/air artifacts so RescaleIntensity maps the clinically
@@ -465,6 +468,200 @@ total_params = sum(p.numel() for p in model.parameters())
 print(f"--- Training on: {device}  |  Model parameters: {total_params:,} ---")
 
 ############################################
+# PER-EPOCH CHECKPOINT UPLOAD TO GITLAB PACKAGE REGISTRY
+# Pushes the checkpoint immediately after each epoch so it is retrievable
+# even if the job is killed before it ends.
+# Files appear under: Project → Deploy → Package Registry → training-checkpoints
+############################################
+def _generate_all_epoch_plots(
+    epoch_num: int,
+    history: dict,
+    ep_labels: list,
+    ep_preds: list,
+    ep_probs: list,
+    model_dir: Path,
+) -> list:
+    """Generate all evaluation plots for epochs completed so far. Returns list of saved Paths."""
+    saved         = []
+    ep_labels_arr = np.array(ep_labels)
+    ep_preds_arr  = np.array(ep_preds)
+    ep_probs_arr  = np.array(ep_probs)
+    epochs_axis   = range(1, len(history["train_loss"]) + 1)
+
+    # ── 1. Training curves (loss / accuracy / LR) ─────────────────────────────
+    fig, axes = plt.subplots(1, 3, figsize=(18, 5))
+    axes[0].plot(epochs_axis, history["train_loss"], marker="o", markersize=3, label="Train")
+    axes[0].plot(epochs_axis, history["test_loss"],  marker="o", markersize=3, label="Val")
+    bvl_ep = int(np.argmin(history["test_loss"])) + 1
+    bvl    = min(history["test_loss"])
+    axes[0].axvline(bvl_ep, color="red", linestyle="--", linewidth=0.8, alpha=0.6)
+    axes[0].annotate(f"best {bvl:.4f}\n(ep {bvl_ep})",
+                     xy=(bvl_ep, bvl), xytext=(bvl_ep+1, bvl+0.02), fontsize=7, color="red",
+                     arrowprops=dict(arrowstyle="->", color="red", lw=0.8))
+    axes[0].set_title("Loss per Epoch"); axes[0].set_xlabel("Epoch"); axes[0].set_ylabel("Loss")
+    axes[0].legend(); axes[0].grid(True, alpha=0.3)
+    axes[1].plot(epochs_axis, history["train_acc"], marker="o", markersize=3, label="Train")
+    axes[1].plot(epochs_axis, history["test_acc"],  marker="o", markersize=3, label="Val")
+    bva_ep = int(np.argmax(history["test_acc"])) + 1
+    bva    = max(history["test_acc"])
+    axes[1].axvline(bva_ep, color="red", linestyle="--", linewidth=0.8, alpha=0.6)
+    axes[1].annotate(f"best {bva:.1f}%\n(ep {bva_ep})",
+                     xy=(bva_ep, bva), xytext=(bva_ep+1, bva-5), fontsize=7, color="red",
+                     arrowprops=dict(arrowstyle="->", color="red", lw=0.8))
+    axes[1].set_title("Accuracy per Epoch (%)"); axes[1].set_xlabel("Epoch"); axes[1].set_ylabel("Accuracy (%)")
+    axes[1].set_ylim(0, 105); axes[1].legend(); axes[1].grid(True, alpha=0.3)
+    axes[2].plot(epochs_axis, history["lr"], marker="o", markersize=3, color="purple", label="LR")
+    axes[2].set_title("LR Schedule (Cosine)"); axes[2].set_xlabel("Epoch"); axes[2].set_ylabel("LR")
+    axes[2].set_yscale("log"); axes[2].legend(); axes[2].grid(True, alpha=0.3)
+    plt.tight_layout()
+    out = model_dir / f"training_curves_epoch{epoch_num:03d}.png"
+    plt.savefig(out, dpi=120); plt.close(fig)
+    saved.append(out)
+
+    # ── 2. History CSV ────────────────────────────────────────────────────────
+    csv_path = model_dir / f"history_curves_epoch{epoch_num:03d}.csv"
+    with open(csv_path, "w", newline="") as _f:
+        _w = csv.writer(_f)
+        _w.writerow(["epoch", "train_loss", "train_acc", "val_loss", "val_acc", "lr"])
+        for i in range(len(history["train_loss"])):
+            _w.writerow([
+                i + 1,
+                round(history["train_loss"][i], 6),
+                round(history["train_acc"][i],  4),
+                round(history["test_loss"][i],  6),
+                round(history["test_acc"][i],   4),
+                history["lr"][i],
+            ])
+    saved.append(csv_path)
+
+    # ── 3. Confusion matrix ───────────────────────────────────────────────────
+    disp = ConfusionMatrixDisplay(confusion_matrix(ep_labels_arr, ep_preds_arr),
+                                   display_labels=["Benign", "Malignancy"])
+    fig, ax = plt.subplots(figsize=(6, 5))
+    disp.plot(ax=ax, cmap="Blues", colorbar=False)
+    ax.set_title(f"Confusion Matrix — Val Set (epoch {epoch_num})")
+    plt.tight_layout()
+    out = model_dir / f"confusion_matrix_epoch{epoch_num:03d}.png"
+    plt.savefig(out, dpi=120); plt.close(fig)
+    saved.append(out)
+
+    # ── 4. ROC + Precision-Recall curves ─────────────────────────────────────
+    try:
+        fpr, tpr, _      = roc_curve(ep_labels_arr, ep_probs_arr)
+        roc_auc          = auc(fpr, tpr)
+        precision_vals, recall_vals, _ = precision_recall_curve(ep_labels_arr, ep_probs_arr)
+        avg_precision    = average_precision_score(ep_labels_arr, ep_probs_arr)
+        fig, axes = plt.subplots(1, 2, figsize=(12, 5))
+        axes[0].plot(fpr, tpr, color="steelblue", lw=2, label=f"AUC = {roc_auc:.3f}")
+        axes[0].plot([0,1],[0,1], color="gray", linestyle="--", lw=1, label="Random")
+        axes[0].set_xlim(0,1); axes[0].set_ylim(0,1.02)
+        axes[0].set_xlabel("FPR"); axes[0].set_ylabel("TPR")
+        axes[0].set_title(f"ROC Curve — Val Set (epoch {epoch_num})")
+        axes[0].legend(loc="lower right"); axes[0].grid(True, alpha=0.3)
+        axes[1].plot(recall_vals, precision_vals, color="darkorange", lw=2, label=f"AP = {avg_precision:.3f}")
+        axes[1].axhline(ep_labels_arr.mean(), color="gray", linestyle="--", lw=1, label="Baseline")
+        axes[1].set_xlim(0,1); axes[1].set_ylim(0,1.02)
+        axes[1].set_xlabel("Recall"); axes[1].set_ylabel("Precision")
+        axes[1].set_title(f"Precision-Recall — Val Set (epoch {epoch_num})")
+        axes[1].legend(loc="upper right"); axes[1].grid(True, alpha=0.3)
+        plt.tight_layout()
+        out = model_dir / f"roc_pr_curves_epoch{epoch_num:03d}.png"
+        plt.savefig(out, dpi=120); plt.close(fig)
+        saved.append(out)
+    except Exception as _exc:
+        print(f"  >> WARNING: ROC/PR plot skipped (epoch {epoch_num}): {_exc}", flush=True)
+
+    # ── 5. Confidence histogram ───────────────────────────────────────────────
+    correct_mask = ep_labels_arr == ep_preds_arr
+    fig, axes = plt.subplots(1, 2, figsize=(14, 5))
+    axes[0].hist(ep_probs_arr[correct_mask],  bins=20, range=(0,1), alpha=0.7,
+                 color="steelblue", label=f"Correct  (n={correct_mask.sum()})")
+    axes[0].hist(ep_probs_arr[~correct_mask], bins=20, range=(0,1), alpha=0.7,
+                 color="tomato",   label=f"Wrong  (n={(~correct_mask).sum()})")
+    axes[0].axvline(0.5, color="gray", linestyle="--", lw=1, label="Threshold")
+    axes[0].set_xlabel("P(Malignancy)"); axes[0].set_ylabel("Count")
+    axes[0].set_title("Confidence — Correct vs Wrong"); axes[0].legend(); axes[0].grid(True, alpha=0.3)
+    axes[1].hist(ep_probs_arr[ep_labels_arr==0], bins=20, range=(0,1), alpha=0.7,
+                 color="steelblue", label=f"True Benign  (n={(ep_labels_arr==0).sum()})")
+    axes[1].hist(ep_probs_arr[ep_labels_arr==1], bins=20, range=(0,1), alpha=0.7,
+                 color="tomato",    label=f"True Malignancy  (n={(ep_labels_arr==1).sum()})")
+    axes[1].axvline(0.5, color="gray", linestyle="--", lw=1, label="Threshold")
+    axes[1].set_xlabel("P(Malignancy)"); axes[1].set_ylabel("Count")
+    axes[1].set_title("Confidence — Per True Class"); axes[1].legend(); axes[1].grid(True, alpha=0.3)
+    plt.suptitle(f"Model Confidence Histogram (epoch {epoch_num})", fontsize=13, fontweight="bold")
+    plt.tight_layout()
+    out = model_dir / f"confidence_histogram_epoch{epoch_num:03d}.png"
+    plt.savefig(out, dpi=120); plt.close(fig)
+    saved.append(out)
+
+    # ── 6. Calibration curve ──────────────────────────────────────────────────
+    try:
+        fraction_pos, mean_pred = calibration_curve(ep_labels_arr, ep_probs_arr, n_bins=10)
+        fig, ax = plt.subplots(figsize=(7, 6))
+        ax.plot(mean_pred, fraction_pos, marker="o", color="steelblue", lw=2, label="Model")
+        ax.plot([0,1],[0,1], linestyle="--", color="gray", lw=1.5, label="Perfect")
+        ax.fill_between(mean_pred, fraction_pos, mean_pred, alpha=0.15, color="steelblue", label="Gap")
+        ax.set_xlabel("Mean Predicted Probability"); ax.set_ylabel("Fraction Positives")
+        ax.set_title(f"Calibration Curve — Val Set (epoch {epoch_num})")
+        ax.legend(); ax.grid(True, alpha=0.3); ax.set_xlim(0,1); ax.set_ylim(0,1)
+        plt.tight_layout()
+        out = model_dir / f"calibration_curve_epoch{epoch_num:03d}.png"
+        plt.savefig(out, dpi=120); plt.close(fig)
+        saved.append(out)
+    except Exception as _exc:
+        print(f"  >> WARNING: Calibration plot skipped (epoch {epoch_num}): {_exc}", flush=True)
+
+    return saved
+
+
+def _upload_epoch_checkpoint(epoch_num: int, *paths: Path) -> None:
+    api_url    = os.environ.get("CI_API_V4_URL")
+    project_id = os.environ.get("CI_PROJECT_ID")
+    job_token  = os.environ.get("CI_JOB_TOKEN")
+
+    if not all([api_url, project_id, job_token]):
+        return  # not running in CI — skip silently
+
+    base_url = (
+        f"{api_url}/projects/{project_id}/packages/generic"
+        f"/training-checkpoints/epoch-{epoch_num:03d}"
+    )
+    for fpath in paths:
+        url = f"{base_url}/{fpath.name}"
+        result = subprocess.run(
+            [
+                "curl", "--fail", "--silent", "--show-error",
+                "--header", f"JOB-TOKEN: {job_token}",
+                "--upload-file", str(fpath),
+                url,
+            ],
+            capture_output=True,
+            text=True,
+        )
+        if result.returncode == 0:
+            print(f"  >> Registry upload OK : {fpath.name} → epoch-{epoch_num:03d}", flush=True)
+        else:
+            print(f"  >> WARNING: registry upload failed ({fpath.name}): {result.stderr}", flush=True)
+
+############################################
+# GRACEFUL SHUTDOWN ON SIGTERM
+# When GitLab kills the job (quota, timeout, cancel) it sends SIGTERM first.
+# Catching it lets Python exit cleanly so the runner's "when: always"
+# artifact upload runs and the last completed epoch's checkpoint is preserved.
+############################################
+_current_epoch = 0
+
+def _handle_sigterm(signum, frame):
+    print(
+        f"\n[SIGTERM] Runner is terminating the job after epoch {_current_epoch}. "
+        f"Latest checkpoint: {LATEST_MODEL_PATH} — exiting for artifact upload.",
+        flush=True,
+    )
+    sys.exit(1)
+
+signal.signal(signal.SIGTERM, _handle_sigterm)
+
+############################################
 # TRAINING LOOP
 ############################################
 for epoch in range(NUM_EPOCHS):
@@ -498,15 +695,20 @@ for epoch in range(NUM_EPOCHS):
 
     model.eval()
     v_loss, v_correct, v_total = 0.0, 0, 0
+    ep_preds, ep_labels_list, ep_probs = [], [], []
     with torch.no_grad():
         for images, labels, _, _ in test_loader:
             images = images.to(device, non_blocking=PIN_MEMORY)
             labels = labels.to(device, non_blocking=PIN_MEMORY)
             with torch.amp.autocast("cuda", enabled=use_cuda):
                 outputs = model(images)
+            probs = torch.softmax(outputs.float(), dim=1)[:, 1]
             v_loss    += criterion(outputs, labels).item()
             v_correct += (outputs.argmax(1) == labels).sum().item()
             v_total   += labels.size(0)
+            ep_preds.extend(outputs.argmax(1).cpu().numpy())
+            ep_labels_list.extend(labels.cpu().numpy())
+            ep_probs.extend(probs.cpu().numpy())
 
     val_acc  = 100.0 * v_correct / v_total if v_total > 0 else 0.0
     val_loss = v_loss / len(test_loader)
@@ -547,6 +749,31 @@ for epoch in range(NUM_EPOCHS):
         "model_state_dict": model.state_dict(),
         "optimizer_state_dict": optimizer.state_dict(),
     }, LATEST_MODEL_PATH)
+    _current_epoch = epoch + 1
+    print(f"  >> Checkpoint saved: epoch {_current_epoch} → {LATEST_MODEL_PATH.name}", flush=True)
+
+    metrics_path = MODEL_DIR / f"metrics_epoch{_current_epoch:03d}.json"
+    with open(metrics_path, "w") as _mf:
+        json.dump({
+            "epoch":        _current_epoch,
+            "train_loss":   train_loss,
+            "train_acc":    train_acc,
+            "val_loss":     val_loss,
+            "val_acc":      val_acc,
+            "lr":           optimizer.param_groups[0]["lr"],
+            "best_val_acc": best_accuracy,
+            "epoch_time_s": elapsed,
+            "history":      history,
+        }, _mf, indent=2)
+    print(f"  >> Metrics saved: {metrics_path.name}", flush=True)
+
+    plots = _generate_all_epoch_plots(
+        _current_epoch, history, ep_labels_list, ep_preds, ep_probs, MODEL_DIR
+    )
+    for p in plots:
+        print(f"  >> Plot saved: {p.name}", flush=True)
+
+    _upload_epoch_checkpoint(_current_epoch, LATEST_MODEL_PATH, metrics_path, *plots)
 
 total_training_time = time.time() - training_start
 epochs_run          = len(history["train_loss"])
@@ -988,7 +1215,7 @@ print("  K-FOLD CROSS VALIDATION (5 folds)")
 print("="*50)
 
 K_FOLDS      = 3
-KFOLD_EPOCHS = 5
+KFOLD_EPOCHS = 3
 
 # Reuse the already-built nodule-level sample lists from both splits
 all_samples    = train_dataset.samples + test_dataset.samples

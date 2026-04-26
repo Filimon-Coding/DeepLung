@@ -22,7 +22,7 @@ HU_MIN, HU_MAX = -1000, 400
 
 preprocess = tio.Compose([
     tio.RescaleIntensity(out_min_max=(0, 1)),
-    tio.CropOrPad((128, 128, 128)),
+    tio.CropOrPad((96, 96, 96)),
 ])
 
 
