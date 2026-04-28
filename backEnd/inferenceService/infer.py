@@ -8,21 +8,19 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 import torchio as tio
-import SimpleITK as sitk
 from PIL import Image
 
 from model import ResNet3D
 
 CLASS_NAMES = ["Benign", "Malignancy"]
 
-# Lung CT Hounsfield Unit window — must match training preprocessing.
-# Clips bone (+3000 HU) and outside-body air so RescaleIntensity maps
-# the clinically relevant range [-1000, 400] to [0, 1].
-HU_MIN, HU_MAX = -1000, 400
-
+# Preprocessing must exactly match the training script at commit 95f593dd:
+#   - No HU clamping (raw values are normalised directly)
+#   - RescaleIntensity to [0, 1] on the full unclamped volume
+#   - CropOrPad to 192×192×192 (the crop size used during training)
 preprocess = tio.Compose([
     tio.RescaleIntensity(out_min_max=(0, 1)),
-    tio.CropOrPad((96, 96, 96)),
+    tio.CropOrPad((192, 192, 192)),
 ])
 
 
@@ -110,15 +108,19 @@ def compute_gradcam(
             align_corners=False,
         ).squeeze().numpy()
 
-        # Keep only the top 10% of activations (90th percentile threshold).
-        # 30% was still too broad after upsampling to full CT dimensions.
+        # Keep only the top 1 % of activations (99th percentile of non-zero values).
+        # The model's final feature map is only 6³, so each activation cell covers
+        # a huge region after upsampling — a tight percentile is required to isolate
+        # actual peak regions rather than broad gradients.
         if cam_up.max() > 0:
             nonzero = cam_up[cam_up > 0]
-            thr = float(np.percentile(nonzero, 90)) if len(nonzero) > 0 else 0.0
+            thr = float(np.percentile(nonzero, 99)) if len(nonzero) > 0 else 0.0
             cam_up[cam_up < thr] = 0.0
             c_max = cam_up.max()
             if c_max > 0:
                 cam_up = cam_up / c_max
+            # Drop anything that normalized below 0.3 so only strong peaks survive.
+            cam_up[cam_up < 0.3] = 0.0
 
         return cam_up
 
@@ -254,6 +256,16 @@ def predict(model: torch.nn.Module, device: torch.device, nifti_bytes: bytes) ->
         mode="trilinear",
         align_corners=False,
     ).squeeze().numpy()
+
+    # Trilinear interpolation re-smears already-broad blobs, so re-threshold.
+    # Keep only the top 0.5 % of all voxels (99.5th percentile of ALL values,
+    # including zeros) to produce small, focused hotspot regions.
+    if cam_full.max() > 0:
+        thr = float(np.percentile(cam_full, 99.5))
+        cam_full[cam_full < thr] = 0.0
+        c_max = cam_full.max()
+        if c_max > 0:
+            cam_full = cam_full / c_max
 
     orig_vol_np = original_volume.squeeze().numpy()
     slice_total = int(orig_vol_np.shape[2])
