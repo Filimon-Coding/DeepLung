@@ -75,6 +75,50 @@ train_gpu:
       - backEnd/inferenceService/checkpoints/resnet3d_latest.pth
     expire_in: 14 days
 
+finetune_medicalnet:
+  stage: train
+  timeout: 48 hours
+  rules:
+    - when: manual
+      allow_failure: true
+  tags:
+    - nvidia-a6000
+
+  before_script:
+    - python -V
+    - pip install --upgrade pip
+    - apt-get update
+    - apt-get install -y --no-install-recommends git git-lfs curl
+    - rm -rf /var/lib/apt/lists/*
+    # Pull training data from allDataUpload branch
+    - git fetch origin allDataUpload
+    - git checkout origin/allDataUpload -- Data
+    - git lfs pull --include="Data/**"
+    - mv Data underdev4/Data
+    # Pull MedicalNet backbone from LFS
+    - git lfs pull --include="underdev4/checkpoints/resnet_18.pth"
+
+  script:
+    - cd underdev4
+    - pip install -r requirements.txt
+
+    - echo "Verifying data and backbone …"
+    - test -d Data/Train || (echo "Missing underdev4/Data/Train" && exit 1)
+    - test -d Data/Test  || (echo "Missing underdev4/Data/Test"  && exit 1)
+    - test -f checkpoints/resnet_18.pth || (echo "Missing resnet_18.pth in checkpoints/" && exit 1)
+
+    - echo "Disk usage:"
+    - du -sh Data || true
+    - du -sh checkpoints/resnet_18.pth || true
+
+    - python -u finetune_medicalnet.py
+
+  artifacts:
+    when: always
+    paths:
+      - underdev4/checkpoints/
+    expire_in: 14 days
+
 train_gpu_fast:
   stage: train
   timeout: 48 hours

@@ -1,16 +1,12 @@
 """
-DataProvider.py
----------------
+DataProvider.py  (underdev4)
+-----------------------------
 CLI test script: runs inference on 30 malignant + 30 benign LIDC-IDRI cases,
-calls the local FastAPI /analyze endpoint, and writes results to
-PredictOutPut/DataProviderOutPut.md.
+calls the local FastAPI /analyze endpoint on port 8002, and writes results to
+PredictOutPut/DataProviderOutPut<timestamp>.md.
 
-Cases selected are completely unseen — not used in training or testing.
-Ground truth source: underdev3/list3.2.csv (cases in CSV = Malignancy,
-cases not in CSV = Benign). Verified against training folder labels.
-
-Usage (inference service must be running on port 8001):
-    python DataProvider.py [--url http://127.0.0.1:8001] [--output DataProviderOutPut.md]
+Usage (underdev4 service must be running on port 8002):
+    python DataProvider.py [--url http://127.0.0.1:8002] [--output DataProviderOutPut.md]
 """
 
 import argparse
@@ -27,7 +23,6 @@ import requests
 # ---------------------------------------------------------------------------
 
 MALIGNANT_CASES = [
-    # Diverse spread across case numbers 106–962 (all unseen by model)
     "LIDC-IDRI-0106",
     "LIDC-IDRI-0132",
     "LIDC-IDRI-0158",
@@ -61,7 +56,6 @@ MALIGNANT_CASES = [
 ]
 
 BENIGN_CASES = [
-    # All 30 come from cases with no malignant nodule (not in list3.2.csv)
     "LIDC-IDRI-0746",
     "LIDC-IDRI-0755",
     "LIDC-IDRI-0760",
@@ -108,12 +102,10 @@ def nifti_path(case_id: str) -> str:
 
 
 def analyze(url: str, filepath: str) -> dict:
-    """POST file to /analyze and return the JSON response dict."""
     with open(filepath, "rb") as f:
-        filename = os.path.basename(filepath)
         resp = requests.post(
             f"{url}/analyze",
-            files={"file": (filename, f, "application/gzip")},
+            files={"file": (os.path.basename(filepath), f, "application/gzip")},
             timeout=300,
         )
     resp.raise_for_status()
@@ -135,8 +127,8 @@ def check_health(url: str) -> bool:
 # ---------------------------------------------------------------------------
 
 def main():
-    parser = argparse.ArgumentParser(description="DataProvider — batch inference CLI test")
-    parser.add_argument("--url", default="http://127.0.0.1:8001", help="Inference service base URL")
+    parser = argparse.ArgumentParser(description="DataProvider (underdev4) — batch inference CLI test")
+    parser.add_argument("--url", default="http://127.0.0.1:8002", help="Inference service base URL")
     parser.add_argument("--output", default=OUTPUT_PATH, help="Output markdown file path")
     args = parser.parse_args()
 
@@ -145,17 +137,17 @@ def main():
     print(f"[DataProvider] NIfTI dir   : {NIFTI_DIR}")
     print()
 
-    # Health check
     print("[DataProvider] Checking service health …")
     if not check_health(args.url):
         print("[ERROR] Inference service is not reachable or model is not loaded.")
-        print("        Start it with:  uvicorn app:app --reload --port 8001")
+        print("        Start it with:  cd underdev4 && uvicorn app:app --reload --port 8002")
         sys.exit(1)
     print("[DataProvider] Service is up and model is loaded.\n")
 
-    # Build unified job list: (case_id, ground_truth_label)
-    jobs = [(cid, "Malignancy") for cid in MALIGNANT_CASES] + \
-           [(cid, "Benign")     for cid in BENIGN_CASES]
+    jobs = (
+        [(cid, "Malignancy") for cid in MALIGNANT_CASES] +
+        [(cid, "Benign")     for cid in BENIGN_CASES]
+    )
 
     results = []
     skipped = []
@@ -182,11 +174,11 @@ def main():
             skipped.append((case_id, gt_label, str(e)))
             continue
 
-        prediction   = out.get("prediction", "?")
-        confidence   = out.get("confidence", 0.0)
-        prob_benign  = out.get("prob_benign", 0.0)
-        prob_mal     = out.get("prob_malignancy", 0.0)
-        correct      = prediction == gt_label
+        prediction  = out.get("prediction", "?")
+        confidence  = out.get("confidence", 0.0)
+        prob_benign = out.get("prob_benign", 0.0)
+        prob_mal    = out.get("prob_malignancy", 0.0)
+        correct     = prediction == gt_label
 
         results.append({
             "case_id":      case_id,
@@ -202,9 +194,6 @@ def main():
         print(f"  {mark}  pred={prediction}  conf={confidence:.1%}  "
               f"p_mal={prob_mal:.3f}  p_ben={prob_benign:.3f}")
 
-    # ------------------------------------------------------------------
-    # Write markdown output
-    # ------------------------------------------------------------------
     write_markdown(args.output, results, skipped)
     print(f"\n[DataProvider] Results written to {args.output}")
 
@@ -212,11 +201,10 @@ def main():
 def write_markdown(output_path: str, results: list, skipped: list):
     now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
 
-    # Summary stats
-    total_run   = len(results)
-    correct     = sum(1 for r in results if r["correct"])
-    wrong       = total_run - correct
-    accuracy    = correct / total_run if total_run > 0 else 0.0
+    total_run = len(results)
+    correct   = sum(1 for r in results if r["correct"])
+    wrong     = total_run - correct
+    accuracy  = correct / total_run if total_run > 0 else 0.0
 
     mal_results = [r for r in results if r["ground_truth"] == "Malignancy"]
     ben_results = [r for r in results if r["ground_truth"] == "Benign"]
@@ -232,60 +220,56 @@ def write_markdown(output_path: str, results: list, skipped: list):
     f1          = (2 * precision * sensitivity / (precision + sensitivity)
                    if (precision + sensitivity) > 0 else 0.0)
 
-    lines = []
-    lines.append(f"# Batch Inference Results — DataProvider")
-    lines.append(f"")
-    lines.append(f"_Generated: {now}_")
-    lines.append(f"")
-    lines.append(f"**Dataset:** LIDC-IDRI  |  **Cases run:** {total_run}  |  **Skipped:** {len(skipped)}")
-    lines.append(f"")
-
-    # Summary table
-    lines.append(f"## Summary")
-    lines.append(f"")
-    lines.append(f"| Metric | Value |")
-    lines.append(f"|--------|-------|")
-    lines.append(f"| Total cases run | {total_run} |")
-    lines.append(f"| Correct predictions | {correct} |")
-    lines.append(f"| Wrong predictions | {wrong} |")
-    lines.append(f"| **Overall Accuracy** | **{accuracy:.1%}** |")
-    lines.append(f"| True Positives (TP) | {tp} |")
-    lines.append(f"| True Negatives (TN) | {tn} |")
-    lines.append(f"| False Positives (FP) | {fp} |")
-    lines.append(f"| False Negatives (FN) | {fn} |")
-    lines.append(f"| **Sensitivity (Recall)** | **{sensitivity:.1%}** |")
-    lines.append(f"| **Specificity** | **{specificity:.1%}** |")
-    lines.append(f"| **Precision** | **{precision:.1%}** |")
-    lines.append(f"| **F1 Score** | **{f1:.3f}** |")
-    lines.append(f"")
-
-    # Confusion matrix (2×2)
-    lines.append(f"## Confusion Matrix")
-    lines.append(f"")
-    lines.append(f"|  | Predicted Malignant | Predicted Benign |")
-    lines.append(f"|--|:-------------------:|:----------------:|")
-    lines.append(f"| **Actual Malignant** | {tp} (TP) | {fn} (FN) |")
-    lines.append(f"| **Actual Benign**    | {fp} (FP) | {tn} (TN) |")
-    lines.append(f"")
-
-    # Full results table — malignant
-    lines.append(f"## Malignant Cases ({len(mal_results)} / 30)")
-    lines.append(f"")
-    lines.append(f"| # | Case ID | Ground Truth | Prediction | Correct | Confidence | P(Malignant) | P(Benign) |")
-    lines.append(f"|---|---------|:------------:|:----------:|:-------:|:----------:|:------------:|:---------:|")
+    lines = [
+        f"# Batch Inference Results — underdev4 (MedicalNet ResNet-18)",
+        f"",
+        f"_Generated: {now}_",
+        f"",
+        f"**Dataset:** LIDC-IDRI  |  **Cases run:** {total_run}  |  **Skipped:** {len(skipped)}",
+        f"",
+        f"## Summary",
+        f"",
+        f"| Metric | Value |",
+        f"|--------|-------|",
+        f"| Total cases run | {total_run} |",
+        f"| Correct predictions | {correct} |",
+        f"| Wrong predictions | {wrong} |",
+        f"| **Overall Accuracy** | **{accuracy:.1%}** |",
+        f"| True Positives (TP) | {tp} |",
+        f"| True Negatives (TN) | {tn} |",
+        f"| False Positives (FP) | {fp} |",
+        f"| False Negatives (FN) | {fn} |",
+        f"| **Sensitivity (Recall)** | **{sensitivity:.1%}** |",
+        f"| **Specificity** | **{specificity:.1%}** |",
+        f"| **Precision** | **{precision:.1%}** |",
+        f"| **F1 Score** | **{f1:.3f}** |",
+        f"",
+        f"## Confusion Matrix",
+        f"",
+        f"|  | Predicted Malignant | Predicted Benign |",
+        f"|--|:-------------------:|:----------------:|",
+        f"| **Actual Malignant** | {tp} (TP) | {fn} (FN) |",
+        f"| **Actual Benign**    | {fp} (FP) | {tn} (TN) |",
+        f"",
+        f"## Malignant Cases ({len(mal_results)} / 30)",
+        f"",
+        f"| # | Case ID | Ground Truth | Prediction | Correct | Confidence | P(Malignant) | P(Benign) |",
+        f"|---|---------|:------------:|:----------:|:-------:|:----------:|:------------:|:---------:|",
+    ]
     for i, r in enumerate(mal_results, 1):
         mark = "✓" if r["correct"] else "✗"
         lines.append(
             f"| {i} | {r['case_id']} | {r['ground_truth']} | {r['prediction']} | {mark} "
             f"| {r['confidence']:.1%} | {r['prob_mal']:.3f} | {r['prob_benign']:.3f} |"
         )
-    lines.append(f"")
 
-    # Full results table — benign
-    lines.append(f"## Benign Cases ({len(ben_results)} / 30)")
-    lines.append(f"")
-    lines.append(f"| # | Case ID | Ground Truth | Prediction | Correct | Confidence | P(Malignant) | P(Benign) |")
-    lines.append(f"|---|---------|:------------:|:----------:|:-------:|:----------:|:------------:|:---------:|")
+    lines += [
+        f"",
+        f"## Benign Cases ({len(ben_results)} / 30)",
+        f"",
+        f"| # | Case ID | Ground Truth | Prediction | Correct | Confidence | P(Malignant) | P(Benign) |",
+        f"|---|---------|:------------:|:----------:|:-------:|:----------:|:------------:|:---------:|",
+    ]
     for i, r in enumerate(ben_results, 1):
         mark = "✓" if r["correct"] else "✗"
         lines.append(
@@ -294,12 +278,13 @@ def write_markdown(output_path: str, results: list, skipped: list):
         )
     lines.append(f"")
 
-    # Skipped cases
     if skipped:
-        lines.append(f"## Skipped Cases ({len(skipped)})")
-        lines.append(f"")
-        lines.append(f"| Case ID | Ground Truth | Reason |")
-        lines.append(f"|---------|:------------:|--------|")
+        lines += [
+            f"## Skipped Cases ({len(skipped)})",
+            f"",
+            f"| Case ID | Ground Truth | Reason |",
+            f"|---------|:------------:|--------|",
+        ]
         for (cid, gt, reason) in skipped:
             lines.append(f"| {cid} | {gt} | {reason} |")
         lines.append(f"")
