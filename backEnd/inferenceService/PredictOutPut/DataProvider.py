@@ -1,55 +1,98 @@
 """
 DataProvider.py
 ---------------
-CLI test script: runs inference on 80 malignant + 80 benign LIDC-IDRI cases,
-calls the local FastAPI /analyze endpoint, and writes results to a timestamped
-PredictOutPut/DataProviderOutPut_<YYYYMMDD_HHMM>.md file.
+CLI test script: runs inference on 30 malignant + 30 benign LIDC-IDRI cases,
+calls the local FastAPI /analyze endpoint on port 8001, and writes results to
+PredictOutPut/MdFileFromDataProvider/DataProviderOutPut<timestamp>.md.
 
-Case pools are loaded from:
-  - malignantCases.md  (257 confirmed-malignant cases, radiologist score >= 4)
-  - benignCases.md     (734 confirmed-benign cases, all scores <= 2 / no nodule >= 3 mm)
-
-80 cases are randomly sampled from each pool per run.
-Cases not found on disk are reported in the Skipped section.
-
-Usage (inference service must be running on port 8001):
-    python DataProvider.py [--url http://127.0.0.1:8001] [--output <path>] [--seed <int>]
+Usage (inferenceService must be running on port 8001):
+    python DataProvider.py [--url http://127.0.0.1:8001] [--output <path>.md]
 """
 
 import argparse
 import os
-import re
 import sys
-import random
+import time
 import datetime
 import requests
 
-SCRIPT_DIR  = os.path.dirname(os.path.abspath(__file__))
-NIFTI_DIR   = "/media/neov/NewDisk/NewDownload/ALLNewDicomNifit"
-SAMPLE_SIZE = 10
+# ---------------------------------------------------------------------------
+# Case lists — unseen cases (not in training or test split)
+# Labels derived from underdev3/list3.2.csv:
+#   in CSV  → Malignancy (confirmed malignant nodule)
+#   not in CSV → Benign (no malignant nodule)
+# ---------------------------------------------------------------------------
 
+MALIGNANT_CASES = [
+    "LIDC-IDRI-0106",
+    "LIDC-IDRI-0132",
+    "LIDC-IDRI-0158",
+    "LIDC-IDRI-0184",
+    "LIDC-IDRI-0212",
+    "LIDC-IDRI-0244",
+    "LIDC-IDRI-0271",
+    "LIDC-IDRI-0299",
+    "LIDC-IDRI-0329",
+    "LIDC-IDRI-0360",
+    "LIDC-IDRI-0390",
+    "LIDC-IDRI-0420",
+    "LIDC-IDRI-0450",
+    "LIDC-IDRI-0478",
+    "LIDC-IDRI-0504",
+    "LIDC-IDRI-0538",
+    "LIDC-IDRI-0568",
+    "LIDC-IDRI-0598",
+    "LIDC-IDRI-0631",
+    "LIDC-IDRI-0660",
+    "LIDC-IDRI-0695",
+    "LIDC-IDRI-0724",
+    "LIDC-IDRI-0754",
+    "LIDC-IDRI-0783",
+    "LIDC-IDRI-0811",
+    "LIDC-IDRI-0836",
+    "LIDC-IDRI-0864",
+    "LIDC-IDRI-0898",
+    "LIDC-IDRI-0929",
+    "LIDC-IDRI-0962",
+]
+
+BENIGN_CASES = [
+    "LIDC-IDRI-0746",
+    "LIDC-IDRI-0755",
+    "LIDC-IDRI-0760",
+    "LIDC-IDRI-0764",
+    "LIDC-IDRI-0774",
+    "LIDC-IDRI-0784",
+    "LIDC-IDRI-0804",
+    "LIDC-IDRI-0808",
+    "LIDC-IDRI-0839",
+    "LIDC-IDRI-0853",
+    "LIDC-IDRI-0862",
+    "LIDC-IDRI-0876",
+    "LIDC-IDRI-0877",
+    "LIDC-IDRI-0878",
+    "LIDC-IDRI-0881",
+    "LIDC-IDRI-0885",
+    "LIDC-IDRI-0887",
+    "LIDC-IDRI-0889",
+    "LIDC-IDRI-0891",
+    "LIDC-IDRI-0897",
+    "LIDC-IDRI-0900",
+    "LIDC-IDRI-0901",
+    "LIDC-IDRI-0903",
+    "LIDC-IDRI-0906",
+    "LIDC-IDRI-0918",
+    "LIDC-IDRI-0927",
+    "LIDC-IDRI-0930",
+    "LIDC-IDRI-0931",
+    "LIDC-IDRI-0934",
+    "LIDC-IDRI-0937",
+]
+
+NIFTI_DIR = "/media/neov/NewDisk/NewDownload/ALLNewDicomNifit"
 _ts = datetime.datetime.now().strftime("%Y%m%d_%H%M")
-OUTPUT_PATH = os.path.join(SCRIPT_DIR, f"DataProviderOutPut{_ts}.md")
-
-
-# ---------------------------------------------------------------------------
-# Pool loaders — parse LIDC-IDRI-XXXX IDs from the companion markdown files
-# ---------------------------------------------------------------------------
-
-def load_cases_from_md(md_path: str) -> list:
-    """Return deduplicated list of LIDC-IDRI-XXXX case IDs found in *md_path*."""
-    pattern = re.compile(r"LIDC-IDRI-\d{4}")
-    seen = set()
-    cases = []
-    with open(md_path, encoding="utf-8") as f:
-        for line in f:
-            if not line.startswith("|"):
-                continue
-            for cid in pattern.findall(line):
-                if cid not in seen:
-                    seen.add(cid)
-                    cases.append(cid)
-    return cases
+_out_dir = os.path.join(os.path.dirname(__file__), "MdFileFromDataProvider")
+OUTPUT_PATH = os.path.join(_out_dir, f"DataProviderOutPut{_ts}.md")
 
 
 # ---------------------------------------------------------------------------
@@ -60,17 +103,23 @@ def nifti_path(case_id: str) -> str:
     return os.path.join(NIFTI_DIR, f"{case_id}_CT.nii.gz")
 
 
-def analyze(url: str, filepath: str) -> dict:
-    """POST file to /analyze and return the JSON response dict."""
-    with open(filepath, "rb") as f:
-        filename = os.path.basename(filepath)
-        resp = requests.post(
-            f"{url}/analyze",
-            files={"file": (filename, f, "application/gzip")},
-            timeout=300,
-        )
-    resp.raise_for_status()
-    return resp.json()
+def analyze(url: str, filepath: str, retries: int = 3, retry_delay: int = 15) -> dict:
+    for attempt in range(1, retries + 1):
+        try:
+            with open(filepath, "rb") as f:
+                resp = requests.post(
+                    f"{url}/analyze",
+                    files={"file": (os.path.basename(filepath), f, "application/gzip")},
+                    timeout=300,
+                )
+            resp.raise_for_status()
+            return resp.json()
+        except (requests.HTTPError, requests.ConnectionError, requests.Timeout) as e:
+            if attempt < retries:
+                print(f"\n  [retry {attempt}/{retries}] {e} — waiting {retry_delay}s for service recovery …", end="", flush=True)
+                time.sleep(retry_delay)
+            else:
+                raise
 
 
 def check_health(url: str) -> bool:
@@ -83,60 +132,46 @@ def check_health(url: str) -> bool:
         return False
 
 
+def wait_for_recovery(url: str, max_wait: int = 120) -> bool:
+    """Poll /health until the service is back up, or give up after max_wait seconds."""
+    print(f"\n  [recovery] Waiting for service to recover (max {max_wait}s) …", end="", flush=True)
+    deadline = time.time() + max_wait
+    while time.time() < deadline:
+        time.sleep(5)
+        if check_health(url):
+            print(" back online.")
+            return True
+        print(".", end="", flush=True)
+    print(" gave up.")
+    return False
+
+
 # ---------------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------------
 
 def main():
     parser = argparse.ArgumentParser(description="DataProvider — batch inference CLI test")
-    parser.add_argument("--url",    default="http://127.0.0.1:8001", help="Inference service base URL")
-    parser.add_argument("--output", default=OUTPUT_PATH,             help="Output markdown file path")
-    parser.add_argument("--seed",   type=int, default=None,          help="Random seed for reproducibility")
+    parser.add_argument("--url", default="http://127.0.0.1:8001", help="Inference service base URL")
+    parser.add_argument("--output", default=OUTPUT_PATH, help="Output markdown file path")
     args = parser.parse_args()
-
-    if args.seed is not None:
-        random.seed(args.seed)
 
     print(f"[DataProvider] Service URL : {args.url}")
     print(f"[DataProvider] Output file : {args.output}")
     print(f"[DataProvider] NIfTI dir   : {NIFTI_DIR}")
-    print(f"[DataProvider] Sample size : {SAMPLE_SIZE} per class")
     print()
 
-    # Load pools from companion MD files
-    mal_md  = os.path.join(SCRIPT_DIR, "newMalignant.md")
-    ben_md  = os.path.join(SCRIPT_DIR, "newBenign.md")
-
-    for path, _ in [(mal_md, "malignantCases.md"), (ben_md, "benignCases.md")]:
-        if not os.path.isfile(path):
-            print(f"[ERROR] Pool file not found: {path}")
-            sys.exit(1)
-
-    mal_pool = load_cases_from_md(mal_md)
-    ben_pool = load_cases_from_md(ben_md)
-
-    print(f"[DataProvider] Malignant pool : {len(mal_pool)} cases")
-    print(f"[DataProvider] Benign pool    : {len(ben_pool)} cases")
-
-    random.shuffle(mal_pool)
-    random.shuffle(ben_pool)
-
-    mal_sample = mal_pool[:SAMPLE_SIZE]
-    ben_sample = ben_pool[:SAMPLE_SIZE]
-
-    print(f"[DataProvider] Selected       : {len(mal_sample)} malignant + {len(ben_sample)} benign\n")
-
-    # Health check
-    print("[DataProvider] Checking service health ...")
+    print("[DataProvider] Checking service health …")
     if not check_health(args.url):
         print("[ERROR] Inference service is not reachable or model is not loaded.")
-        print("        Start it with:  uvicorn app:app --reload --port 8001")
+        print("        Start it with:  cd backEnd/inferenceService && uvicorn app:app --reload --port 8001")
         sys.exit(1)
     print("[DataProvider] Service is up and model is loaded.\n")
 
-    # Build unified job list
-    jobs = [(cid, "Malignancy") for cid in mal_sample] + \
-           [(cid, "Benign")     for cid in ben_sample]
+    jobs = (
+        [(cid, "Malignancy") for cid in MALIGNANT_CASES] +
+        [(cid, "Benign")     for cid in BENIGN_CASES]
+    )
 
     results = []
     skipped = []
@@ -144,24 +179,28 @@ def main():
     total = len(jobs)
     for idx, (case_id, gt_label) in enumerate(jobs, 1):
         path = nifti_path(case_id)
-        prefix = f"[{idx:03d}/{total}] {case_id} (GT={gt_label})"
+        prefix = f"[{idx:02d}/{total}] {case_id} (GT={gt_label})"
 
         if not os.path.isfile(path):
             print(f"{prefix}  →  FILE NOT FOUND, skipping")
             skipped.append((case_id, gt_label, "file not found"))
             continue
 
-        print(f"{prefix}  →  sending ...", end="", flush=True)
+        print(f"{prefix}  →  sending …", end="", flush=True)
         try:
             out = analyze(args.url, path)
         except requests.HTTPError as e:
             print(f"  HTTP error: {e}")
             skipped.append((case_id, gt_label, f"HTTP {e.response.status_code}"))
+            wait_for_recovery(args.url)
             continue
         except Exception as e:
             print(f"  error: {e}")
             skipped.append((case_id, gt_label, str(e)))
+            wait_for_recovery(args.url)
             continue
+
+        time.sleep(1)
 
         prediction  = out.get("prediction", "?")
         confidence  = out.get("confidence", 0.0)
@@ -209,57 +248,56 @@ def write_markdown(output_path: str, results: list, skipped: list):
     f1          = (2 * precision * sensitivity / (precision + sensitivity)
                    if (precision + sensitivity) > 0 else 0.0)
 
-    lines = []
-    lines.append(f"# Batch Inference Results — DataProvider")
-    lines.append(f"")
-    lines.append(f"_Generated: {now}_")
-    lines.append(f"")
-    lines.append(f"**Dataset:** LIDC-IDRI  |  **Target:** {SAMPLE_SIZE} malignant + {SAMPLE_SIZE} benign  "
-                 f"|  **Cases run:** {total_run}  |  **Skipped:** {len(skipped)}")
-    lines.append(f"")
-
-    lines.append(f"## Summary")
-    lines.append(f"")
-    lines.append(f"| Metric | Value |")
-    lines.append(f"|--------|-------|")
-    lines.append(f"| Total cases run | {total_run} |")
-    lines.append(f"| Correct predictions | {correct} |")
-    lines.append(f"| Wrong predictions | {wrong} |")
-    lines.append(f"| **Overall Accuracy** | **{accuracy:.1%}** |")
-    lines.append(f"| True Positives (TP) | {tp} |")
-    lines.append(f"| True Negatives (TN) | {tn} |")
-    lines.append(f"| False Positives (FP) | {fp} |")
-    lines.append(f"| False Negatives (FN) | {fn} |")
-    lines.append(f"| **Sensitivity (Recall)** | **{sensitivity:.1%}** |")
-    lines.append(f"| **Specificity** | **{specificity:.1%}** |")
-    lines.append(f"| **Precision** | **{precision:.1%}** |")
-    lines.append(f"| **F1 Score** | **{f1:.3f}** |")
-    lines.append(f"")
-
-    lines.append(f"## Confusion Matrix")
-    lines.append(f"")
-    lines.append(f"|  | Predicted Malignant | Predicted Benign |")
-    lines.append(f"|--|:-------------------:|:----------------:|")
-    lines.append(f"| **Actual Malignant** | {tp} (TP) | {fn} (FN) |")
-    lines.append(f"| **Actual Benign**    | {fp} (FP) | {tn} (TN) |")
-    lines.append(f"")
-
-    lines.append(f"## Malignant Cases ({len(mal_results)} / {SAMPLE_SIZE})")
-    lines.append(f"")
-    lines.append(f"| # | Case ID | Ground Truth | Prediction | Correct | Confidence | P(Malignant) | P(Benign) |")
-    lines.append(f"|---|---------|:------------:|:----------:|:-------:|:----------:|:------------:|:---------:|")
+    lines = [
+        f"# Batch Inference Results — inferenceService (ResNet3D)",
+        f"",
+        f"_Generated: {now}_",
+        f"",
+        f"**Dataset:** LIDC-IDRI  |  **Cases run:** {total_run}  |  **Skipped:** {len(skipped)}",
+        f"",
+        f"## Summary",
+        f"",
+        f"| Metric | Value |",
+        f"|--------|-------|",
+        f"| Total cases run | {total_run} |",
+        f"| Correct predictions | {correct} |",
+        f"| Wrong predictions | {wrong} |",
+        f"| **Overall Accuracy** | **{accuracy:.1%}** |",
+        f"| True Positives (TP) | {tp} |",
+        f"| True Negatives (TN) | {tn} |",
+        f"| False Positives (FP) | {fp} |",
+        f"| False Negatives (FN) | {fn} |",
+        f"| **Sensitivity (Recall)** | **{sensitivity:.1%}** |",
+        f"| **Specificity** | **{specificity:.1%}** |",
+        f"| **Precision** | **{precision:.1%}** |",
+        f"| **F1 Score** | **{f1:.3f}** |",
+        f"",
+        f"## Confusion Matrix",
+        f"",
+        f"|  | Predicted Malignant | Predicted Benign |",
+        f"|--|:-------------------:|:----------------:|",
+        f"| **Actual Malignant** | {tp} (TP) | {fn} (FN) |",
+        f"| **Actual Benign**    | {fp} (FP) | {tn} (TN) |",
+        f"",
+        f"## Malignant Cases ({len(mal_results)} / 30)",
+        f"",
+        f"| # | Case ID | Ground Truth | Prediction | Correct | Confidence | P(Malignant) | P(Benign) |",
+        f"|---|---------|:------------:|:----------:|:-------:|:----------:|:------------:|:---------:|",
+    ]
     for i, r in enumerate(mal_results, 1):
         mark = "✓" if r["correct"] else "✗"
         lines.append(
             f"| {i} | {r['case_id']} | {r['ground_truth']} | {r['prediction']} | {mark} "
             f"| {r['confidence']:.1%} | {r['prob_mal']:.3f} | {r['prob_benign']:.3f} |"
         )
-    lines.append(f"")
 
-    lines.append(f"## Benign Cases ({len(ben_results)} / {SAMPLE_SIZE})")
-    lines.append(f"")
-    lines.append(f"| # | Case ID | Ground Truth | Prediction | Correct | Confidence | P(Malignant) | P(Benign) |")
-    lines.append(f"|---|---------|:------------:|:----------:|:-------:|:----------:|:------------:|:---------:|")
+    lines += [
+        f"",
+        f"## Benign Cases ({len(ben_results)} / 30)",
+        f"",
+        f"| # | Case ID | Ground Truth | Prediction | Correct | Confidence | P(Malignant) | P(Benign) |",
+        f"|---|---------|:------------:|:----------:|:-------:|:----------:|:------------:|:---------:|",
+    ]
     for i, r in enumerate(ben_results, 1):
         mark = "✓" if r["correct"] else "✗"
         lines.append(
@@ -269,14 +307,17 @@ def write_markdown(output_path: str, results: list, skipped: list):
     lines.append(f"")
 
     if skipped:
-        lines.append(f"## Skipped Cases ({len(skipped)})")
-        lines.append(f"")
-        lines.append(f"| Case ID | Ground Truth | Reason |")
-        lines.append(f"|---------|:------------:|--------|")
+        lines += [
+            f"## Skipped Cases ({len(skipped)})",
+            f"",
+            f"| Case ID | Ground Truth | Reason |",
+            f"|---------|:------------:|--------|",
+        ]
         for (cid, gt, reason) in skipped:
             lines.append(f"| {cid} | {gt} | {reason} |")
         lines.append(f"")
 
+    os.makedirs(os.path.dirname(output_path), exist_ok=True)
     with open(output_path, "w", encoding="utf-8") as f:
         f.write("\n".join(lines) + "\n")
 
