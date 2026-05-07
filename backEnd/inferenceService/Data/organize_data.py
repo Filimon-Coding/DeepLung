@@ -99,7 +99,7 @@ tr_m, te_m = move_split(malignant_files, OUT_BASE / "Train/Malignancy", OUT_BASE
 print(f"  Benign    → Train: {tr_b}  |  Test: {te_b}")
 print(f"  Malignancy→ Train: {tr_m}  |  Test: {te_m}")
 
-# ── STEP 4: verify ────────────────────────────────────────────────
+####── STEP 4: verify ────────────────────────────────────────────────
 print("\n=== Verification ===")
 for folder in ["Train/Benign", "Train/Malignancy", "Test/Benign", "Test/Malignancy"]:
     actual = len(list((OUT_BASE / folder).glob("*.nii.gz")))
