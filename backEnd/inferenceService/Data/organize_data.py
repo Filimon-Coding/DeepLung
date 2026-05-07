@@ -92,7 +92,7 @@ if unmatched_files:
     for f in unmatched_files:
         print(f"    - {f.name}")
 
-# ── STEP 3: move into Data/ structure ─────────────────────────────
+## ── STEP 3: move into Data/ structure ─────────────────────────────
 print("\n=== Moving files ===")
 tr_b, te_b = move_split(benign_files,    OUT_BASE / "Train/Benign",    OUT_BASE / "Test/Benign")
 tr_m, te_m = move_split(malignant_files, OUT_BASE / "Train/Malignancy", OUT_BASE / "Test/Malignancy")
