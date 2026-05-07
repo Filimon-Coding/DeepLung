@@ -12,6 +12,7 @@ Usage (underdev4 service must be running on port 8002):
 import argparse
 import os
 import sys
+import time
 import datetime
 import requests
 
@@ -101,15 +102,23 @@ def nifti_path(case_id: str) -> str:
     return os.path.join(NIFTI_DIR, f"{case_id}_CT.nii.gz")
 
 
-def analyze(url: str, filepath: str) -> dict:
-    with open(filepath, "rb") as f:
-        resp = requests.post(
-            f"{url}/analyze",
-            files={"file": (os.path.basename(filepath), f, "application/gzip")},
-            timeout=300,
-        )
-    resp.raise_for_status()
-    return resp.json()
+def analyze(url: str, filepath: str, retries: int = 3, retry_delay: int = 15) -> dict:
+    for attempt in range(1, retries + 1):
+        try:
+            with open(filepath, "rb") as f:
+                resp = requests.post(
+                    f"{url}/analyze",
+                    files={"file": (os.path.basename(filepath), f, "application/gzip")},
+                    timeout=300,
+                )
+            resp.raise_for_status()
+            return resp.json()
+        except (requests.HTTPError, requests.ConnectionError, requests.Timeout) as e:
+            if attempt < retries:
+                print(f"\n  [retry {attempt}/{retries}] {e} — waiting {retry_delay}s for service recovery …", end="", flush=True)
+                time.sleep(retry_delay)
+            else:
+                raise
 
 
 def check_health(url: str) -> bool:
@@ -120,6 +129,20 @@ def check_health(url: str) -> bool:
     except Exception as e:
         print(f"[health] {e}")
         return False
+
+
+def wait_for_recovery(url: str, max_wait: int = 120) -> bool:
+    """Poll /health until the service is back up, or give up after max_wait seconds."""
+    print(f"\n  [recovery] Waiting for service to recover (max {max_wait}s) …", end="", flush=True)
+    deadline = time.time() + max_wait
+    while time.time() < deadline:
+        time.sleep(5)
+        if check_health(url):
+            print(" back online.")
+            return True
+        print(".", end="", flush=True)
+    print(" gave up.")
+    return False
 
 
 # ---------------------------------------------------------------------------
@@ -168,11 +191,15 @@ def main():
         except requests.HTTPError as e:
             print(f"  HTTP error: {e}")
             skipped.append((case_id, gt_label, f"HTTP {e.response.status_code}"))
+            wait_for_recovery(args.url)
             continue
         except Exception as e:
             print(f"  error: {e}")
             skipped.append((case_id, gt_label, str(e)))
+            wait_for_recovery(args.url)
             continue
+
+        time.sleep(1)
 
         prediction  = out.get("prediction", "?")
         confidence  = out.get("confidence", 0.0)

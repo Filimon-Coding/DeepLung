@@ -53,9 +53,6 @@ def nifti_bytes_to_tensor(nifti_bytes: bytes):
         original_tensor = subject.mri.data.clone()        # (1, X, Y, Z) full resolution
         original_affine = subject.mri.affine.copy()       # affine before any crop/pad
 
-        # Apply lung HU window before normalisation — matches training preprocessing
-        subject.mri.set_data(torch.clamp(subject.mri.data, HU_MIN, HU_MAX))
-
         subject = preprocess(subject)
 
         return subject.mri.data, subject.mri.affine, original_tensor, original_affine
@@ -114,13 +111,12 @@ def compute_gradcam(
         # actual peak regions rather than broad gradients.
         if cam_up.max() > 0:
             nonzero = cam_up[cam_up > 0]
-            thr = float(np.percentile(nonzero, 99)) if len(nonzero) > 0 else 0.0
+            thr = float(np.percentile(nonzero, 99.5)) if len(nonzero) > 0 else 0.0
             cam_up[cam_up < thr] = 0.0
             c_max = cam_up.max()
             if c_max > 0:
                 cam_up = cam_up / c_max
-            # Drop anything that normalized below 0.3 so only strong peaks survive.
-            cam_up[cam_up < 0.3] = 0.0
+            cam_up[cam_up < 0.6] = 0.0
 
         return cam_up
 
@@ -257,15 +253,18 @@ def predict(model: torch.nn.Module, device: torch.device, nifti_bytes: bytes) ->
         align_corners=False,
     ).squeeze().numpy()
 
-    # Trilinear interpolation re-smears already-broad blobs, so re-threshold.
-    # Keep only the top 0.5 % of all voxels (99.5th percentile of ALL values,
-    # including zeros) to produce small, focused hotspot regions.
+    # Re-threshold after trilinear upsampling smears the sparse hotspots.
+    # Use percentile of NON-ZERO values only — the volume is mostly zeros so
+    # percentile-of-all would return 0.0 and remove nothing.
     if cam_full.max() > 0:
-        thr = float(np.percentile(cam_full, 99.5))
-        cam_full[cam_full < thr] = 0.0
+        nonzero = cam_full[cam_full > 0]
+        if len(nonzero) > 0:
+            thr = float(np.percentile(nonzero, 85))
+            cam_full[cam_full < thr] = 0.0
         c_max = cam_full.max()
         if c_max > 0:
             cam_full = cam_full / c_max
+        cam_full[cam_full < 0.5] = 0.0
 
     orig_vol_np = original_volume.squeeze().numpy()
     slice_total = int(orig_vol_np.shape[2])

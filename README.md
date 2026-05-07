@@ -85,7 +85,9 @@ frontEnd/src
 ├── components
 │   ├── AnalyzeButton.tsx
 │   ├── DragAndDrop.tsx
+│   ├── LungVisual.tsx
 │   ├── Navbar.tsx
+│   ├── NiiVueViewer.tsx
 │   ├── Spinner.tsx
 │   └── ThemeToggle.tsx
 ├── hooks
@@ -398,6 +400,27 @@ Renders the light/dark mode toggle button.
 
 ---
 
+### `components/LungVisual.tsx`
+
+Animated 3D lung illustration used on the home page for visual branding.
+
+---
+
+### `components/NiiVueViewer.tsx`
+
+Wraps the NiiVue library to render NIfTI volumes in a WebGL canvas.
+
+Responsibilities:
+
+* initialise the NiiVue canvas
+* load the main CT volume from a base64-encoded `.nii.gz` blob
+* load the Grad-CAM overlay as a second NIfTI layer with a colormap
+* expose slice navigation and overlay opacity controls
+
+Used on the Results page to display the interactive CT + Grad-CAM viewer.
+
+---
+
 ### `components/AnalyzeButton.tsx`
 
 A reusable button for running analysis.
@@ -449,6 +472,12 @@ Responsibilities:
 * if `mustChangePassword` is true, redirect to `/change-password`
 * otherwise redirect to `/analyze`
 * show error message on failure
+
+---
+
+### `pages/RequestAccessPage.tsx`
+
+A public page that explains the access request process and redirects the user to the registration form. Accessible at `/request-access`.
 
 ---
 
@@ -935,15 +964,19 @@ The main inference pipeline.
 
 Responsibilities:
 
-* read NIfTI bytes
-* convert to tensor
-* preprocess the CT volume
-* run the PyTorch model
-* compute probabilities
-* choose prediction class
-* generate Grad-CAM heatmap and NIfTI Grad-CAM export
-* generate full-resolution axial middle-slice image
-* compute Grad-CAM peak activation coordinates (x, y, z) in 128³ space
+* read NIfTI bytes and write to a temp file for TorchIO loading
+* preprocess the CT volume: `RescaleIntensity [0,1]` → `CropOrPad 192×192×192`
+* run the PyTorch 3D ResNet model
+* compute softmax probabilities and choose prediction class
+* compute **GradCAM++** heatmap on `layer3` — sharper localization than plain GradCAM
+* upsample the CAM volume back to the original CT dimensions for a pixel-accurate NIfTI overlay
+* export the full-resolution Grad-CAM as a gzip-compressed `.nii.gz` (base64)
+* generate the axial middle-slice PNG (base64) from the original-resolution volume
+* blend the heatmap over the CT slice using a jet colormap for the 2-D overlay image
+* extract patient/study metadata from NIfTI header fields (`extract_nifti_patient_info`)
+* count distinct high-activation CAM clusters as a nodule candidate proxy (`count_nodule_candidates`)
+* append a structured row to a markdown prediction log file (`append_prediction_log`)
+* compute Grad-CAM peak activation voxel coordinates (x, y, z) in the original CT space
 * return all outputs as Python dictionary
 
 ---
@@ -984,6 +1017,8 @@ Lists Python packages required for the service:
 * `SimpleITK`
 * `numpy`
 * `Pillow`
+* `nibabel`
+* `scipy`
 * `python-multipart`
 
 ---

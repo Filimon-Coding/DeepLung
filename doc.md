@@ -82,7 +82,9 @@ frontEnd/src
 ├── components
 │   ├── AnalyzeButton.tsx
 │   ├── DragAndDrop.tsx
+│   ├── LungVisual.tsx
 │   ├── Navbar.tsx
+│   ├── NiiVueViewer.tsx
 │   ├── Spinner.tsx
 │   └── ThemeToggle.tsx
 ├── hooks
@@ -93,6 +95,7 @@ frontEnd/src
 │   ├── admin
 │   │   ├── AccessRequestsPage.tsx
 │   │   ├── AdminDashboard.tsx
+│   │   ├── SystemMonitorPage.tsx
 │   │   └── UsersPage.tsx
 │   ├── AnalyzePage.tsx
 │   ├── ChangePasswordPage.tsx
@@ -100,6 +103,7 @@ frontEnd/src
 │   ├── HomePage.tsx
 │   ├── LoginPage.tsx
 │   ├── RegisterPage.tsx
+│   ├── RequestAccessPage.tsx
 │   └── ResultsPage.tsx
 ├── routers
 │   ├── AdminRoute.tsx
@@ -134,7 +138,7 @@ backEnd
 │   ├── Program.cs
 │   ├── appsettings.json
 │   └── deeplungct.db
-└── pythonService
+└── inferenceService
     ├── app.py
     ├── infer.py
     ├── model.py
@@ -208,6 +212,7 @@ Routes in the project:
 * `/` → HomePage
 * `/login` → LoginPage
 * `/register` → RegisterPage (access request form)
+* `/request-access` → RequestAccessPage
 * `/change-password` → ChangePasswordPage
 * `/analyze` → AnalyzePage *(protected)*
 * `/results` → ResultsPage *(protected)*
@@ -215,6 +220,7 @@ Routes in the project:
 * `/admin` → AdminDashboard *(admin only)*
 * `/admin/requests` → AccessRequestsPage *(admin only)*
 * `/admin/users` → UsersPage *(admin only)*
+* `/admin/monitor` → SystemMonitorPage *(admin only)*
 
 ---
 
@@ -391,6 +397,27 @@ Renders the light/dark mode toggle button.
 
 ---
 
+### `components/LungVisual.tsx`
+
+Animated 3D lung illustration used on the home page for visual branding.
+
+---
+
+### `components/NiiVueViewer.tsx`
+
+Wraps the NiiVue library to render NIfTI volumes in a WebGL canvas.
+
+Responsibilities:
+
+* initialise the NiiVue canvas
+* load the main CT volume from a base64-encoded `.nii.gz` blob
+* load the Grad-CAM overlay as a second NIfTI layer with a colormap
+* expose slice navigation and overlay opacity controls
+
+Used on the Results page to display the interactive CT + Grad-CAM viewer.
+
+---
+
 ### `components/AnalyzeButton.tsx`
 
 A reusable button for running analysis.
@@ -442,6 +469,12 @@ Responsibilities:
 * if `mustChangePassword` is true, redirect to `/change-password`
 * otherwise redirect to `/analyze`
 * show error message on failure
+
+---
+
+### `pages/RequestAccessPage.tsx`
+
+A public page that explains the access request process and redirects the user to the registration form. Accessible at `/request-access`.
 
 ---
 
@@ -524,6 +557,7 @@ Responsibilities:
 * show navigation cards linking to:
   * Access Requests
   * Users
+  * System Monitor
 
 Only visible in the navbar when the user has `role === "admin"`.
 
@@ -565,6 +599,18 @@ Responsibilities:
 * delete a user account (e.g. when an employee leaves)
 * reset a user's password
 * search/filter users
+
+---
+
+### `pages/admin/SystemMonitorPage.tsx`
+
+The admin system monitoring page, accessible at `/admin/monitor`.
+
+Responsibilities:
+
+* display system-wide usage statistics (total users, total analyses, pending requests)
+* show admin activity logs with user info and analysis result summaries
+* display service health status for backend and Python inference service
 
 ---
 
@@ -691,7 +737,7 @@ Responsibilities:
 
 ### `Controllers/AdminController.cs`
 
-Handles user management for admins.
+Handles user management and system monitoring for admins.
 
 Endpoints:
 
@@ -699,6 +745,9 @@ Endpoints:
 * `PUT /api/admin/users/{id}` — update user fields
 * `DELETE /api/admin/users/{id}` — delete a user account
 * `POST /api/admin/users/{id}/reset-password` — set a new password for a user
+* `GET /api/admin/stats` — system-wide usage statistics
+* `GET /api/admin/logs` — admin activity logs with user info and analysis results
+* `GET /api/admin/health` — service health status
 
 All endpoints require admin role.
 
@@ -912,14 +961,19 @@ The main inference pipeline.
 
 Responsibilities:
 
-* read NIfTI bytes
-* convert to tensor
-* preprocess the CT volume
-* run the PyTorch model
-* compute probabilities
-* choose prediction class
-* generate Grad-CAM
-* generate middle-slice image
+* read NIfTI bytes and write to a temp file for TorchIO loading
+* preprocess the CT volume: `RescaleIntensity [0,1]` → `CropOrPad 192×192×192`
+* run the PyTorch 3D ResNet model
+* compute softmax probabilities and choose prediction class
+* compute **GradCAM++** heatmap on `layer3` — sharper localization than plain GradCAM
+* upsample the CAM volume back to the original CT dimensions for a pixel-accurate NIfTI overlay
+* export the full-resolution Grad-CAM as a gzip-compressed `.nii.gz` (base64)
+* generate the axial middle-slice PNG (base64) from the original-resolution volume
+* blend the heatmap over the CT slice using a jet colormap for the 2-D overlay image
+* extract patient/study metadata from NIfTI header fields (`extract_nifti_patient_info`)
+* count distinct high-activation CAM clusters as a nodule candidate proxy (`count_nodule_candidates`)
+* append a structured row to a markdown prediction log file (`append_prediction_log`)
+* compute Grad-CAM peak activation voxel coordinates (x, y, z) in the original CT space
 * return all outputs as Python dictionary
 
 ---
@@ -960,6 +1014,8 @@ Lists Python packages required for the service:
 * `SimpleITK`
 * `numpy`
 * `Pillow`
+* `nibabel`
+* `scipy`
 * `python-multipart`
 
 ---
@@ -1052,6 +1108,7 @@ Lists Python packages required for the service:
    * **Edit** — update name, email, mobile, position, or role.
    * **Reset password** — set a new temporary password and mark `MustChangePassword = true`.
    * **Delete** — permanently remove the account (used when an employee leaves).
+4. Admin can navigate to **Dashboard → System Monitor** to view usage statistics, activity logs, and service health.
 
 ---
 
