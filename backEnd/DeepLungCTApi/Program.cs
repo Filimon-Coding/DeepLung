@@ -1,4 +1,5 @@
 using System.Text;
+using System.Security.Claims;
 using DeepLungCTApi.Data;
 using DeepLungCTApi.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -120,6 +121,42 @@ app.UseCors("dev");
 app.UseHttpsRedirection();
 
 app.UseAuthentication();
+
+app.Use(async (context, next) =>
+{
+    var path = context.Request.Path;
+    var canChangePassword =
+        path.Equals("/api/change-password", StringComparison.OrdinalIgnoreCase);
+
+    if (path.StartsWithSegments("/api") &&
+        !canChangePassword &&
+        context.User.Identity?.IsAuthenticated == true)
+    {
+        var userIdStr = context.User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+        if (int.TryParse(userIdStr, out var userId))
+        {
+            var db = context.RequestServices.GetRequiredService<AppDbContext>();
+            var mustChangePassword = await db.Users
+                .Where(u => u.Id == userId)
+                .Select(u => u.MustChangePassword)
+                .FirstOrDefaultAsync();
+
+            if (mustChangePassword)
+            {
+                context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                await context.Response.WriteAsJsonAsync(new
+                {
+                    detail = "Password must be changed before continuing."
+                });
+                return;
+            }
+        }
+    }
+
+    await next();
+});
+
 app.UseAuthorization();
 
 app.MapControllers();

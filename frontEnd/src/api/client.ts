@@ -10,6 +10,10 @@ export function isAuthenticated(): boolean {
   return !!localStorage.getItem("token");
 }
 
+export function mustChangePassword(): boolean {
+  return localStorage.getItem("mustChangePassword") === "true";
+}
+
 export function clearAuth(): void {
   localStorage.removeItem("token");
   localStorage.removeItem("userId");

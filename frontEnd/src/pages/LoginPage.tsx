@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Navigate, useNavigate, Link } from "react-router-dom";
 import { loginUser } from "../api/auth";
-import { isAuthenticated } from "../api/client";
+import { isAuthenticated, mustChangePassword } from "../api/client";
 
 function LoginPage() {
   const [userId, setUserId] = useState("");
@@ -12,6 +12,10 @@ function LoginPage() {
   const navigate = useNavigate();
 
   if (isAuthenticated()) {
+    if (mustChangePassword()) {
+      return <Navigate to="/change-password" replace />;
+    }
+
     const role = localStorage.getItem("role");
     return <Navigate to={role === "admin" ? "/admin" : "/analyze"} replace />;
   }

@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { API_BASE_URL } from "../api/client";
+import { Navigate, useNavigate } from "react-router-dom";
+import { API_BASE_URL, isAuthenticated } from "../api/client";
 
 async function changePassword(
   currentPassword: string,
@@ -40,6 +40,10 @@ function ChangePasswordPage() {
   const isForcedChange =
     localStorage.getItem("mustChangePassword") === "true";
   const role = localStorage.getItem("role");
+
+  if (!isAuthenticated()) {
+    return <Navigate to="/login" replace />;
+  }
 
   async function handleSubmit(e: { preventDefault(): void }) {
     e.preventDefault();
