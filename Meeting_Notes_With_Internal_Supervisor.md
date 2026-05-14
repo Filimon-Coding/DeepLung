@@ -18,7 +18,7 @@
 
 ---
 
-## Rekonstruerte notater - møte med internveileder - 28.01.2026
+## Møte med Trym / internveileder - 28.01.2026
 
 - Vi gikk videre med å avklare prosjektretningen og hva som er realistisk å få til i bachelorperioden.
 - Det ble anbefalt å holde fokus på en fungerende helhet, heller enn å legge til for mange ekstra funksjoner tidlig.
@@ -50,7 +50,7 @@
 
 ---
 
-## Møte med internveileder - 04.02.2026
+## Møte med Trym / internveileder - 04.02.2026
 
 - Vi gikk videre på MLOps-oppsettet og diskuterte hvordan MLflow kan brukes til å tracke parametere og resultater.
 - Klassifisering og heatmaps ble igjen diskutert som en viktig del av forklarbarheten i systemet.
@@ -65,7 +65,7 @@
 
 ---
 
-## Rekonstruerte notater - møte med internveileder - 11.02.2026
+## Møte med Trym / internveileder - 11.02.2026
 
 - Vi diskuterte hvordan pipelinen skal gå fra medisinske bildedata til input som modellen kan bruke.
 - Hvert steg i pipelinen bør dokumenteres, for eksempel konvertering, preprocessing, trening og evaluering.
@@ -79,7 +79,7 @@
 
 ---
 
-## Møte med internveileder - 18.02.2026
+## Møte med Trym / internveileder - 18.02.2026
 
 - Vi diskuterte datasett og databehandling.
 - Datasettet er lite, så data augmentation bør vurderes for å øke datamengden.
@@ -97,7 +97,7 @@
 
 ---
 
-## Møte med internveileder - 25.02.2026
+## Møte med Trym / internveileder - 25.02.2026
 
 - Vi bør ha notater om hva vi gjør og hvorfor vi gjør det.
 - Disse notatene blir nyttige som logg når vi begynner å skrive bachelorrapporten for fullt.
@@ -114,7 +114,7 @@
 
 ---
 
-## Rekonstruerte notater - møte med internveileder - 04.03.2026
+## Møte med Trym / internveileder - 04.03.2026
 
 - Vi gikk gjennom status på applikasjon, datasettarbeid og modellpipeline.
 - Veileder anbefalte å holde fokus på hovedfunksjonaliteten før vi legger til ekstra features.
@@ -128,7 +128,7 @@
 
 ---
 
-## Møte med internveileder - 11.03.2026
+## Møte med Trym / internveileder - 11.03.2026
 
 - Vi diskuterte mulige stretch goals for prosjektet.
 - Ekstra features kan legges til hvis det blir tid, men hovedprosjektet bør prioriteres først.
@@ -140,24 +140,24 @@
 
 ---
 
-## Møte med internveileder - 18.03.2026
+## Møte med Trym / internveileder - 18.03.2026
 
 - Vi etterspurte tilbakemelding på problemstillingen.
 - Veileder mente at vi ikke trenger å fokusere for mye på problemstillingen akkurat nå, og hadde ikke rukket å se grundig på den.
-- Filimon viste endringer i webapplikasjonen.
-- Admin kan nå lage nye brukere med mer informasjon.
-- Applikasjonen har funksjonalitet for å requeste access til innlogging.
-- 3D-volum blir laget direkte i mappen til koden.
-- Vi må tenke på lagring av sensitive data i databasen med tanke på sikkerhet.
-- Hvis vi ikke rekker å løse alt rundt sikkerhet, må dette nevnes i rapporten.
-- En mulig videreutvikling er at brukernavn genereres basert på personalia, men samtidig på en måte som unngår like brukernavn.
+- Gjennomgikk endringer i webapplikasjonen på møtet:
+    - Admin kan nå lage nye brukere med mer informasjon.
+    - Applikasjonen har funksjonalitet for å requeste access til innlogging.
+    - 3D-volum blir laget direkte i mappen til koden.
+    - Vi må tenke på lagring av sensitive data i databasen med tanke på sikkerhet.
+    - Hvis vi ikke rekker å løse alt rundt sikkerhet, må dette nevnes i rapporten.
+    - En mulig videreutvikling er at brukernavn genereres basert på personalia, men samtidig på en måte som unngår like brukernavn.
 - Rapporten bør struktureres etter kravene som ligger på Canvas.
 - Vi kan bruke Sona og ChatGPT til å finne kilder.
 - Til neste gang bør vi strukturere rapporten etter dokumentasjonsstandarden, se på sikkerhet i applikasjonen og fikse visualisering/heatmap.
 
 ---
 
-## Rekonstruerte notater - møte med internveileder - 25.03.2026
+## Møte med Trym / internveileder - 25.03.2026
 
 - Vi gikk gjennom status på webapplikasjonen, modellpipelinen og rapportstrukturen.
 - Veileder anbefalte å holde fokus på MVP og ikke bruke for mye tid på valgfrie funksjoner.
@@ -171,7 +171,7 @@
 
 ---
 
-## Rekonstruerte notater - møte med internveileder - 08.04.2026
+## Møte med Trym / internveileder - 08.04.2026
 
 - Vi gikk gjennom strukturen på frontend, backend og inference service.
 - Rapporten bør forklare hvordan tilgangskontroll, analyse, resultatside og historikk henger sammen.
@@ -184,7 +184,7 @@
 
 ---
 
-## Rekonstruerte notater - møte med internveileder - 15.04.2026
+## Møte med Trym / internveileder - 15.04.2026
 
 - Rapporten bør ha et tydelig skille mellom prosessdokumentasjon og produktdokumentasjon.
 - Prosessdelen bør forklare planlegging, metodikk, risiko, krav og brukerfeedback.
@@ -197,50 +197,42 @@
 
 ---
 
-## Rekonstruerte notater - møte med internveileder - 22.04.2026
+## Møte med Trym / internveileder - 22.04.2026
 
 - Webapplikasjonskapittelet bør forklare arkitekturen før det går inn på enkeltkomponenter.
-- Backend, database og kommunikasjon med inference service bør beskrives på et nivå som leseren forstår.
 - Modellkapittelet bør koble dataset preprocessing, trening, evaluering og Grad-CAM sammen til én tydelig pipeline.
 - Rapporten bør forklare evalueringsmetrikker og hvorfor de er relevante.
 - Accuracy alene gir ikke nok kontekst i et medisinsk klassifiseringsprosjekt.
 - Error analysis og usikkerhet bør diskuteres der det er mulig.
 - Vi bør forklare hvordan systemet kan startes og testes lokalt.
-- CI/CD, artifact delivery og treningsoppsett bør beskrives som en del av prosjektarbeidsflyten.
 
 ---
 
-## Rekonstruerte notater - møte med internveileder - 29.04.2026
+## Møte med Trym / internveileder - 29.04.2026
 
 - Veileder anbefalte å prioritere stabilisering av eksisterende funksjonalitet fremfor å legge til nye features.
 - Hvis en feature er uferdig, bør den enten ferdigstilles, forenkles eller flyttes til videre arbeid.
-- Sluttproduktet bør vise hele flyten fra opplasting/analyse til resultat og visualisering.
-- Terminologi bør være konsekvent i rapporten, spesielt for inference, preprocessing, Grad-CAM og brukerroller.
-- Figurer og tabeller bør refereres til i teksten og brukes aktivt for å støtte forklaringen.
+- Terminologi bør være konsekvent i rapporten.
 - Rapporten bør vise sammenheng mellom prosjektmål, implementasjon, testing og resultater.
 - Diskusjonskapittelet bør reflektere over tekniske valg, kompromisser og hva som kunne vært gjort annerledes med mer tid.
 
 ---
 
-## Rekonstruerte notater - møte med internveileder - 06.05.2026
+## Møte med Trym / internveileder - 06.05.2026
 
 - Fokuset bør nå flyttes fra utvikling til ferdigstilling av bachelorrapporten.
 - Hvert kapittel bør ha en tydelig funksjon og unngå unødvendige gjentakelser.
 - Introduksjon, avgrensning, metode, implementasjon, testing, diskusjon og konklusjon bør henge godt sammen.
 - Påstander om AI, medisinsk bildeanalyse, explainability og utviklingsmetodikk bør støttes med kilder.
 - Referanser, figurer og bildetekster bør kontrolleres.
-- Rapporten bør ikke overdrive hva systemet kan gjøre medisinsk.
-- Repository, dokumentasjon og rapport bør beskrive samme versjon av prosjektet.
 - Kjente mangler bør beskrives som begrensninger eller videre arbeid.
 
 ---
 
-## Rekonstruerte notater - møte med internveileder - 13.05.2026
+## Møte med Trym / internveileder - 13.05.2026
 
-- Dette møtet handlet mest om siste finpuss på bachelorrapporten.
 - Rapporten bør være tydelig, konsekvent og lett å følge.
-- Prosess, produkt, testing og diskusjon bør støtte den samme historien om prosjektet.
-- Vi bør ikke legge til store nye seksjoner helt på slutten med mindre det er nødvendig for forståelsen.
 - Konklusjonen bør svare på de opprinnelige prosjektmålene.
-- Begrensninger og videre arbeid bør være konkrete og ærlige.
 - Siste gjennomgang bør fokusere på språk, overskrifter, figurer, kilder og konsekvent begrepsbruk.
+- Skrive mer på Process Dokumentation, men gjøre ferdig Discussion og Conclusion først og deretter se om hvordan vi ligger rundt ordomfang og hvor mye mer man kan dokumentere i process dokumentation. 
+- Gjøre endringer ihht kommentarer som Trym har lagt til i bachelorrapporten. 
