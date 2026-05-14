@@ -65,11 +65,11 @@ function ResultsPage() {
 
     fetchGradcamNifti(r.analysis_id)
       .then((b64) => { if (!cancelled) setGradcamNiftiB64(b64); })
-      .catch(() => { /* silently skip — viewer still works without overlay */ })
+      .catch(() => {  })
       .finally(() => { if (!cancelled) setGradcamNiftiLoading(false); });
 
     return () => { cancelled = true; };
-  }, [r?.analysis_id]);  // eslint-disable-line react-hooks/exhaustive-deps
+  }, [r?.analysis_id]);  
 
   if (!r) {
     return (
