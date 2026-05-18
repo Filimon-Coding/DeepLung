@@ -1,14 +1,19 @@
 import os
-from fastapi import FastAPI, UploadFile, File, HTTPException
+import pathlib
+from fastapi import FastAPI, UploadFile, File, HTTPException, Query
+from fastapi.responses import PlainTextResponse
 from fastapi.middleware.cors import CORSMiddleware
 import torch
 
 from infer import (
     load_model,
     predict,
+    load_cam_from_cache,
+    cam_to_nifti_b64,
     extract_nifti_patient_info,
     count_nodule_candidates,
     append_prediction_log,
+    CAM_CACHE_DIR,
 )
 
 app = FastAPI(title="DeepLungCT Python Service")
@@ -86,3 +91,29 @@ async def analyze(file: UploadFile = File(...)):
         "size_bytes": len(content),
         **out,
     }
+
+
+@app.get("/gradcam-nifti", response_class=PlainTextResponse)
+def gradcam_nifti(cam_path: str = Query(...)):
+    """Load a cached CAM .npz and return the NIfTI as a base64 text/plain response.
+    Called lazily by the .NET backend when the frontend first requests the 3-D overlay."""
+    # Validate the path is within cam_cache to prevent path traversal
+    try:
+        requested = pathlib.Path(cam_path).resolve()
+        cache_dir = CAM_CACHE_DIR.resolve()
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid cam_path")
+
+    if not str(requested).startswith(str(cache_dir)):
+        raise HTTPException(status_code=400, detail="cam_path outside cache directory")
+
+    if not requested.exists():
+        raise HTTPException(status_code=404, detail="CAM cache file not found")
+
+    try:
+        cam_full, affine = load_cam_from_cache(str(requested))
+        b64 = cam_to_nifti_b64(cam_full, affine)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"NIfTI generation failed: {e}")
+
+    return b64
