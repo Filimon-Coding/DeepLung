@@ -4,6 +4,7 @@ import io
 import base64
 import datetime
 import pathlib
+import uuid
 import numpy as np
 import torch
 import torch.nn.functional as F
@@ -11,6 +12,8 @@ import torchio as tio
 from PIL import Image
 
 from model import ResNet3D
+
+CAM_CACHE_DIR = pathlib.Path(__file__).parent / "cam_cache"
 
 CLASS_NAMES = ["Benign", "Malignancy"]
 
@@ -26,7 +29,7 @@ preprocess = tio.Compose([
 
 def load_model(checkpoint_path: str, device: torch.device) -> torch.nn.Module:
     model = ResNet3D().to(device)
-    ckpt = torch.load(checkpoint_path, map_location=device)
+    ckpt = torch.load(checkpoint_path, map_location=device, weights_only=False)
 
     if isinstance(ckpt, dict) and "model_state_dict" in ckpt:
         state = ckpt["model_state_dict"]
@@ -148,19 +151,16 @@ def _resize_gray(arr: np.ndarray, size: int) -> np.ndarray:
 
 
 def _jet_colormap(gray_u8: np.ndarray) -> np.ndarray:
-    """
-    Simple approximate jet colormap without OpenCV.
-    Input: uint8 grayscale image
-    Output: RGB uint8 image
-    """
+    """Standard piecewise-linear jet colormap (blue→cyan→green→yellow→red)."""
     x = gray_u8.astype(np.float32) / 255.0
-
-    r = np.clip(1.5 - np.abs(4 * x - 3), 0, 1)
-    g = np.clip(1.5 - np.abs(4 * x - 2), 0, 1)
-    b = np.clip(1.5 - np.abs(4 * x - 1), 0, 1)
-
-    rgb = np.stack([r, g, b], axis=-1)
-    return (rgb * 255).astype(np.uint8)
+    xp = [0.0,  0.125, 0.375, 0.625, 0.875, 1.0]
+    rp = [0.0,  0.0,   0.0,   1.0,   1.0,   0.5]
+    gp = [0.0,  0.0,   1.0,   1.0,   0.0,   0.0]
+    bp = [0.5,  1.0,   1.0,   0.0,   0.0,   0.0]
+    r = np.interp(x, xp, rp)
+    g = np.interp(x, xp, gp)
+    b = np.interp(x, xp, bp)
+    return (np.stack([r, g, b], axis=-1) * 255).astype(np.uint8)
 
 
 def tensor_to_middle_slice_b64(volume: torch.Tensor, size: int = 512) -> str:
@@ -181,7 +181,6 @@ def gradcam_overlay_b64(
     cam_3d: np.ndarray,
     volume: torch.Tensor,
     size: int = 256,
-    alpha: float = 0.45,
 ) -> str:
     vol = volume.squeeze().numpy()
     mid_vol = vol.shape[2] // 2
@@ -202,8 +201,14 @@ def gradcam_overlay_b64(
 
     heatmap_rgb = _jet_colormap(cam_u8)
 
+    # Per-pixel blend: cam intensity controls how much heatmap replaces CT.
+    # Zero-activation pixels stay as pure CT grayscale; peak activations
+    # become up to 85% vivid heatmap color so anatomy stays readable.
+    cam_weight = cam_u8.astype(np.float32) / 255.0
+    cam_weight = cam_weight[:, :, np.newaxis] * 0.85
+
     vol_rgb = np.stack([vol_u8] * 3, axis=-1).astype(np.float32)
-    blend = ((1 - alpha) * vol_rgb + alpha * heatmap_rgb.astype(np.float32))
+    blend = vol_rgb * (1.0 - cam_weight) + heatmap_rgb.astype(np.float32) * cam_weight
     blend = np.clip(blend, 0, 255).astype(np.uint8)
 
     return _to_b64_png(blend)
@@ -230,6 +235,20 @@ def cam_to_nifti_b64(cam_3d: np.ndarray, affine: np.ndarray | None = None) -> st
     finally:
         if tmp_path and os.path.exists(tmp_path):
             os.remove(tmp_path)
+
+
+def _save_cam_to_cache(cam_full: np.ndarray, affine: np.ndarray) -> str:
+    """Persist cam_full + affine as a compressed .npz file. Returns the absolute path."""
+    CAM_CACHE_DIR.mkdir(parents=True, exist_ok=True)
+    path = CAM_CACHE_DIR / f"{uuid.uuid4().hex}.npz"
+    np.savez_compressed(str(path), cam=cam_full.astype(np.float32), affine=affine)
+    return str(path)
+
+
+def load_cam_from_cache(cam_cache_path: str) -> tuple[np.ndarray, np.ndarray]:
+    """Load cam_full and affine from a .npz cache file."""
+    data = np.load(cam_cache_path)
+    return data["cam"], data["affine"]
 
 
 def predict(model: torch.nn.Module, device: torch.device, nifti_bytes: bytes) -> dict:
@@ -271,8 +290,11 @@ def predict(model: torch.nn.Module, device: torch.device, nifti_bytes: bytes) ->
     slice_index = slice_total // 2
     slice_b64 = tensor_to_middle_slice_b64(original_volume)
 
-    gradcam_b64       = gradcam_overlay_b64(cam_3d, volume)
-    gradcam_nifti_b64 = cam_to_nifti_b64(cam_full, original_affine)  # full-res + original affine
+    gradcam_b64 = gradcam_overlay_b64(cam_3d, volume)
+
+    # Save full-res CAM + affine to disk so the NIfTI can be built on demand
+    # without blocking the analyze response (cam_to_nifti_b64 is slow for large volumes).
+    cam_cache_path = _save_cam_to_cache(cam_full, original_affine)
 
     # Peak activation in full-res space
     peak_flat = int(np.argmax(cam_full))
@@ -285,7 +307,7 @@ def predict(model: torch.nn.Module, device: torch.device, nifti_bytes: bytes) ->
         "prob_malignancy": float(probs[1]),
         "middle_slice_b64": slice_b64,
         "gradcam_b64": gradcam_b64,
-        "gradcam_nifti_b64": gradcam_nifti_b64,
+        "cam_cache_path": cam_cache_path,
         "slice_index": slice_index,
         "slice_total": slice_total,
         "cam_peak_x": int(px),
