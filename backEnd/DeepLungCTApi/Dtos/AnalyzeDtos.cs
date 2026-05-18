@@ -31,8 +31,8 @@ public class PythonAnalyzeResponse
     [JsonPropertyName("gradcam_b64")]
     public string? GradcamB64 { get; set; }
 
-    [JsonPropertyName("gradcam_nifti_b64")]
-    public string? GradcamNiftiB64 { get; set; }
+    [JsonPropertyName("cam_cache_path")]
+    public string? CamCachePath { get; set; }
 
     [JsonPropertyName("slice_index")]
     public int SliceIndex { get; set; }
