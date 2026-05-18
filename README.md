@@ -92,6 +92,7 @@ frontEnd/src
 │   └── ThemeToggle.tsx
 ├── hooks
 │   └── useTheme.ts
+├── imagetools.d.ts
 ├── index.css
 ├── main.tsx
 ├── pages
@@ -141,6 +142,9 @@ backEnd
 │   ├── Program.cs
 │   ├── appsettings.json
 │   └── deeplungct.db
+├── DeepLungCTApi.Tests
+│   ├── AdminControllerTests.cs
+│   └── DeepLungCTApi.Tests.csproj
 └── inferenceService
     ├── app.py
     ├── infer.py
@@ -198,9 +202,11 @@ Responsibilities:
 Responsibilities:
 
 * renders the `Navbar`
+* wraps the `<Outlet />` in a `<Suspense>` boundary with a `<Spinner />` fallback
 * renders the current page through `<Outlet />`
 
 Because routing is nested, the page content changes inside the outlet while the navbar stays visible.
+The `Suspense` boundary is required because all routes are lazy-loaded — it shows the spinner while any page chunk is being fetched.
 
 ---
 
@@ -209,6 +215,9 @@ Because routing is nested, the page content changes inside the outlet while the 
 ### `routers/router.tsx`
 
 This file defines all frontend routes.
+
+All page components are loaded with `React.lazy()` so each route is a separate JS chunk.
+This means the initial page load only downloads the code for the current route — heavy dependencies like NiiVue (~2 MB) and Recharts are only downloaded when the user actually navigates to the Results or Admin pages.
 
 Routes in the project:
 
@@ -633,6 +642,64 @@ Responsibilities:
 * style result pages and history cards
 * style buttons, inputs, selects, error messages
 * control responsive layout
+
+---
+
+## 4.11 Performance optimizations
+
+The following optimizations have been applied to improve Lighthouse scores:
+
+| Optimization | Details |
+|---|---|
+| Route-level code splitting | All pages are `React.lazy()` — initial JS bundle reduced from ~1.6 MB to ~190 KB |
+| Vendor chunk splitting | NiiVue, Recharts, and React are each in their own chunks (loaded on demand) |
+| Non-blocking fonts | Google Fonts moved from CSS `@import` to `<link rel="preload">` in `index.html` |
+| Non-blocking Font Awesome | Font Awesome CDN loaded with `rel="preload"` + `onload` swap pattern |
+| WebP image conversion | `lungs-3d.png` (845 KB) converted to WebP at 80% quality (125 KB) via `vite-imagetools` |
+| Lazy image loading | Lung image uses `loading="lazy"` and `decoding="async"` |
+
+**Lighthouse results (localhost):**
+
+| Metric | Before | After |
+|---|---|---|
+| Performance score | 59 | 82 |
+| First Contentful Paint | 3.1 s | 1.3 s |
+| Largest Contentful Paint | 5.8 s | 2.5 s |
+
+---
+
+## 4.12 Unit tests (.NET)
+
+### `backEnd/DeepLungCTApi.Tests/`
+
+Unit tests for the .NET backend using **xUnit** and an **in-memory EF Core database**.
+
+Test file: `AdminControllerTests.cs`
+
+Covers all `AdminController` endpoints:
+
+* `ListUsers` — returns correct user list
+* `UpdateUser` — persists field changes; returns 404 on unknown ID
+* `DeleteUser` — removes user; returns 404 on unknown ID
+* `ResetPassword` — sets new hash and `MustChangePassword = true`; returns 404 on unknown ID
+* `GetStats` — returns correct user / analysis / request counts
+* `GetLogs` — returns activity logs with correct user and result data
+* `GetHealth` — returns service health status
+
+Each test uses an isolated in-memory database so no state leaks between runs.
+
+**Run tests:**
+
+```bash
+cd backEnd/DeepLungCTApi.Tests
+dotnet test
+```
+
+**Dependencies:**
+
+* `xunit` 2.7.0
+* `Microsoft.EntityFrameworkCore.InMemory` 8.0.24
+* `BCrypt.Net-Next` 4.1.0
 
 ---
 
@@ -1216,9 +1283,12 @@ The admin pages use consistent section headers with count badges, expanded detai
 * dedicated .NET business/API layer
 * separate Python model service for inference
 * saved user-specific analysis history
-* Grad-CAM visualization for explainability
+* Grad-CAM++ visualization for explainability
 * SQLite makes local development simple
 * JWT auth with role claims
+* route-level code splitting with React.lazy — fast initial load
+* Lighthouse performance score 82 (up from 59) with FCP 1.3 s
+* unit tests for AdminController with xUnit and in-memory database
 
 ---
 
@@ -1251,28 +1321,36 @@ The admin pages use consistent section headers with count badges, expanded detai
 
 ### Frontend
 
-* React
-* TypeScript
-* React Router
-* CSS (custom design system in `index.css`)
+* React 19.2
+* TypeScript 5.9
+* Vite 7.3
+* React Router 7.13
+* NiiVue 0.68 (NIfTI CT viewer)
+* Recharts 3.8 (admin charts)
+* vite-imagetools 10.x (WebP image conversion at build time)
+* CSS (custom design system in `index.css`, dark/light theme)
 
 ### Backend
 
-* ASP.NET Core Web API
-* Entity Framework Core
+* ASP.NET Core 8.0 Web API
+* Entity Framework Core 8.0
 * SQLite
-* JWT Authentication
-* BCrypt
+* JWT Bearer authentication (24-hour expiry)
+* BCrypt password hashing
+* Swagger / OpenAPI
+* xUnit (unit tests with in-memory EF database)
 
 ### Python service
 
 * FastAPI
 * Uvicorn
-* PyTorch
+* PyTorch 2.x (CUDA 12.6)
 * TorchIO
 * SimpleITK
 * NumPy
 * Pillow
+* nibabel
+* GradCAM++ explainability
 
 ---
 
