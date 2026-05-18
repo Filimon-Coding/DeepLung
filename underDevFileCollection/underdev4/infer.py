@@ -11,7 +11,7 @@ import SimpleITK as sitk
 from PIL import Image
 
 sys.path.insert(0, os.path.dirname(__file__))
-from model import ResNet3D
+from underDevFileCollection.underdev4.model import ResNet3D
 
 CLASS_NAMES = ["Benign", "Malignancy"]
 

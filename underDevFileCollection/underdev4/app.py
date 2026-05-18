@@ -3,7 +3,7 @@ import torch
 from fastapi import FastAPI, UploadFile, File, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
-from infer import load_model, predict
+from underDevFileCollection.underdev4.infer import load_model, predict
 
 app = FastAPI(title="DeepLungCT — MedicalNet ResNet-18 test")
 

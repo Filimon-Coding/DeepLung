@@ -46,7 +46,7 @@ from sklearn.metrics import (
 from tqdm import tqdm
 
 sys.path.insert(0, os.path.dirname(__file__))
-from model import ResNet3D
+from underDevFileCollection.underdev4.model import ResNet3D
 
 # ---------------------------------------------------------------------------
 # Config
