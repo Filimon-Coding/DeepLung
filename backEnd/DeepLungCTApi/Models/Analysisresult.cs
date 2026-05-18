@@ -23,8 +23,12 @@ public class AnalysisResult
     public string? SliceBase64 { get; set; }
     public string? HeatmapBase64 { get; set; }
 
-    // 3-D Grad-CAM NIfTI (small volume, stored as base64 text)
+    // 3-D Grad-CAM NIfTI base64 — populated lazily on first GET /history/{id}/gradcam-nifti
     public string? GradcamNiftiB64 { get; set; }
+
+    // Path to the .npz file holding cam_full + affine produced during inference.
+    // Used to generate GradcamNiftiB64 on demand without re-running inference.
+    public string? CamCachePath { get; set; }
 
     // Slice / Grad-CAM spatial metadata from the Python inference
     public int SliceIndex { get; set; }

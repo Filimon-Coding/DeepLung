@@ -928,3 +928,4 @@
 | 924 | 2026-05-16 14:03:15 | LIDC-IDRI-0143_CT.nii.gz | N/A | CT from 3.000000-Recon 2 CHEST-92345 | 1 | 14.0% | 86.0% | Malignancy | 86.0% | (95, 191, 107) |
 | 925 | 2026-05-16 14:04:59 | LIDC-IDRI-0107_CT.nii.gz | N/A | CT from 5591.000000-NA-44791 | 1 | 9.8% | 90.2% | Malignancy | 90.2% | (50, 361, 192) |
 | 926 | 2026-05-16 14:05:37 | LIDC-IDRI-0071_CT.nii.gz | N/A | CT from 4.000000-1.25 STANDARD-54861 | 0 | 65.1% | 34.9% | Benign | 65.1% | (0, 65, 0) |
+| 927 | 2026-05-18 13:07:50 | LIDC-IDRI-0937_CT.nii.gz | N/A | CT from 5401.000000-ThorRoutine  3.0  B31f-18358 | 1 | 43.1% | 56.9% | Malignancy | 56.9% | (61, 193, 150) |

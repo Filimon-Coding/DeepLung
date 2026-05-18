@@ -60,7 +60,7 @@ builder.Services.AddCors(options =>
 builder.Services.AddHttpClient("PythonService", client =>
 {
     client.BaseAddress = new Uri(builder.Configuration["PythonService:BaseUrl"]!);
-    client.Timeout = TimeSpan.FromSeconds(180);
+    client.Timeout = TimeSpan.FromSeconds(600);
 });
 
 var jwtSecret = builder.Configuration["Jwt:Secret"]!;

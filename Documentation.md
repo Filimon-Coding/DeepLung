@@ -8,6 +8,7 @@
 Bachelor-CRAI is a full-stack medical imaging web application for lung CT analysis.
 The system allows clinical staff (doctors, nurses, radiologists) to:
 
+
 ![alt text](image-1.png)
 
 * request access — a form sent to the administrator
@@ -84,17 +85,21 @@ frontEnd/src
 ├── components
 │   ├── AnalyzeButton.tsx
 │   ├── DragAndDrop.tsx
+│   ├── LungVisual.tsx
 │   ├── Navbar.tsx
+│   ├── NiiVueViewer.tsx
 │   ├── Spinner.tsx
 │   └── ThemeToggle.tsx
 ├── hooks
 │   └── useTheme.ts
+├── imagetools.d.ts
 ├── index.css
 ├── main.tsx
 ├── pages
 │   ├── admin
 │   │   ├── AccessRequestsPage.tsx
 │   │   ├── AdminDashboard.tsx
+│   │   ├── SystemMonitorPage.tsx
 │   │   └── UsersPage.tsx
 │   ├── AnalyzePage.tsx
 │   ├── ChangePasswordPage.tsx
@@ -102,6 +107,7 @@ frontEnd/src
 │   ├── HomePage.tsx
 │   ├── LoginPage.tsx
 │   ├── RegisterPage.tsx
+│   ├── RequestAccessPage.tsx
 │   └── ResultsPage.tsx
 ├── routers
 │   ├── AdminRoute.tsx
@@ -120,7 +126,7 @@ backEnd
 │   │   ├── AccessRequestsController.cs
 │   │   ├── AdminController.cs
 │   │   ├── AnalyzeController.cs
-│   │   ├── AnalysisHistoryController.cs
+│   │   ├── Analysishistorycontroller.cs
 │   │   └── AuthController.cs
 │   ├── Data
 │   │   └── AppDbContext.cs
@@ -136,7 +142,10 @@ backEnd
 │   ├── Program.cs
 │   ├── appsettings.json
 │   └── deeplungct.db
-└── pythonService
+├── DeepLungCTApi.Tests
+│   ├── AdminControllerTests.cs
+│   └── DeepLungCTApi.Tests.csproj
+└── inferenceService
     ├── app.py
     ├── infer.py
     ├── model.py
@@ -193,9 +202,11 @@ Responsibilities:
 Responsibilities:
 
 * renders the `Navbar`
+* wraps the `<Outlet />` in a `<Suspense>` boundary with a `<Spinner />` fallback
 * renders the current page through `<Outlet />`
 
 Because routing is nested, the page content changes inside the outlet while the navbar stays visible.
+The `Suspense` boundary is required because all routes are lazy-loaded — it shows the spinner while any page chunk is being fetched.
 
 ---
 
@@ -205,11 +216,15 @@ Because routing is nested, the page content changes inside the outlet while the 
 
 This file defines all frontend routes.
 
+All page components are loaded with `React.lazy()` so each route is a separate JS chunk.
+This means the initial page load only downloads the code for the current route — heavy dependencies like NiiVue (~2 MB) and Recharts are only downloaded when the user actually navigates to the Results or Admin pages.
+
 Routes in the project:
 
 * `/` → HomePage
 * `/login` → LoginPage
 * `/register` → RegisterPage (access request form)
+* `/request-access` → RequestAccessPage
 * `/change-password` → ChangePasswordPage
 * `/analyze` → AnalyzePage *(protected)*
 * `/results` → ResultsPage *(protected)*
@@ -217,6 +232,7 @@ Routes in the project:
 * `/admin` → AdminDashboard *(admin only)*
 * `/admin/requests` → AccessRequestsPage *(admin only)*
 * `/admin/users` → UsersPage *(admin only)*
+* `/admin/monitor` → SystemMonitorPage *(admin only)*
 
 ---
 
@@ -393,6 +409,27 @@ Renders the light/dark mode toggle button.
 
 ---
 
+### `components/LungVisual.tsx`
+
+Animated 3D lung illustration used on the home page for visual branding.
+
+---
+
+### `components/NiiVueViewer.tsx`
+
+Wraps the NiiVue library to render NIfTI volumes in a WebGL canvas.
+
+Responsibilities:
+
+* initialise the NiiVue canvas
+* load the main CT volume from a base64-encoded `.nii.gz` blob
+* load the Grad-CAM overlay as a second NIfTI layer with a colormap
+* expose slice navigation and overlay opacity controls
+
+Used on the Results page to display the interactive CT + Grad-CAM viewer.
+
+---
+
 ### `components/AnalyzeButton.tsx`
 
 A reusable button for running analysis.
@@ -444,6 +481,12 @@ Responsibilities:
 * if `mustChangePassword` is true, redirect to `/change-password`
 * otherwise redirect to `/analyze`
 * show error message on failure
+
+---
+
+### `pages/RequestAccessPage.tsx`
+
+A public page that explains the access request process and redirects the user to the registration form. Accessible at `/request-access`.
 
 ---
 
@@ -526,6 +569,7 @@ Responsibilities:
 * show navigation cards linking to:
   * Access Requests
   * Users
+  * System Monitor
 
 Only visible in the navbar when the user has `role === "admin"`.
 
@@ -570,6 +614,18 @@ Responsibilities:
 
 ---
 
+### `pages/admin/SystemMonitorPage.tsx`
+
+The admin system monitoring page, accessible at `/admin/monitor`.
+
+Responsibilities:
+
+* display system-wide usage statistics (total users, total analyses, pending requests)
+* show admin activity logs with user info and analysis result summaries
+* display service health status for backend and Python inference service
+
+---
+
 ## 4.10 Styling
 
 ### `index.css`
@@ -586,6 +642,64 @@ Responsibilities:
 * style result pages and history cards
 * style buttons, inputs, selects, error messages
 * control responsive layout
+
+---
+
+## 4.11 Performance optimizations
+
+The following optimizations have been applied to improve Lighthouse scores:
+
+| Optimization | Details |
+|---|---|
+| Route-level code splitting | All pages are `React.lazy()` — initial JS bundle reduced from ~1.6 MB to ~190 KB |
+| Vendor chunk splitting | NiiVue, Recharts, and React are each in their own chunks (loaded on demand) |
+| Non-blocking fonts | Google Fonts moved from CSS `@import` to `<link rel="preload">` in `index.html` |
+| Non-blocking Font Awesome | Font Awesome CDN loaded with `rel="preload"` + `onload` swap pattern |
+| WebP image conversion | `lungs-3d.png` (845 KB) converted to WebP at 80% quality (125 KB) via `vite-imagetools` |
+| Lazy image loading | Lung image uses `loading="lazy"` and `decoding="async"` |
+
+**Lighthouse results (localhost):**
+
+| Metric | Before | After |
+|---|---|---|
+| Performance score | 59 | 82 |
+| First Contentful Paint | 3.1 s | 1.3 s |
+| Largest Contentful Paint | 5.8 s | 2.5 s |
+
+---
+
+## 4.12 Unit tests (.NET)
+
+### `backEnd/DeepLungCTApi.Tests/`
+
+Unit tests for the .NET backend using **xUnit** and an **in-memory EF Core database**.
+
+Test file: `AdminControllerTests.cs`
+
+Covers all `AdminController` endpoints:
+
+* `ListUsers` — returns correct user list
+* `UpdateUser` — persists field changes; returns 404 on unknown ID
+* `DeleteUser` — removes user; returns 404 on unknown ID
+* `ResetPassword` — sets new hash and `MustChangePassword = true`; returns 404 on unknown ID
+* `GetStats` — returns correct user / analysis / request counts
+* `GetLogs` — returns activity logs with correct user and result data
+* `GetHealth` — returns service health status
+
+Each test uses an isolated in-memory database so no state leaks between runs.
+
+**Run tests:**
+
+```bash
+cd backEnd/DeepLungCTApi.Tests
+dotnet test
+```
+
+**Dependencies:**
+
+* `xunit` 2.7.0
+* `Microsoft.EntityFrameworkCore.InMemory` 8.0.24
+* `BCrypt.Net-Next` 4.1.0
 
 ---
 
@@ -693,7 +807,7 @@ Responsibilities:
 
 ### `Controllers/AdminController.cs`
 
-Handles user management for admins.
+Handles user management and system monitoring for admins.
 
 Endpoints:
 
@@ -701,6 +815,9 @@ Endpoints:
 * `PUT /api/admin/users/{id}` — update user fields
 * `DELETE /api/admin/users/{id}` — delete a user account
 * `POST /api/admin/users/{id}/reset-password` — set a new password for a user
+* `GET /api/admin/stats` — system-wide usage statistics
+* `GET /api/admin/logs` — admin activity logs with user info and analysis results
+* `GET /api/admin/health` — service health status
 
 All endpoints require admin role.
 
@@ -914,14 +1031,19 @@ The main inference pipeline.
 
 Responsibilities:
 
-* read NIfTI bytes
-* convert to tensor
-* preprocess the CT volume
-* run the PyTorch model
-* compute probabilities
-* choose prediction class
-* generate Grad-CAM
-* generate middle-slice image
+* read NIfTI bytes and write to a temp file for TorchIO loading
+* preprocess the CT volume: `RescaleIntensity [0,1]` → `CropOrPad 192×192×192`
+* run the PyTorch 3D ResNet model
+* compute softmax probabilities and choose prediction class
+* compute **GradCAM++** heatmap on `layer3` — sharper localization than plain GradCAM
+* upsample the CAM volume back to the original CT dimensions for a pixel-accurate NIfTI overlay
+* export the full-resolution Grad-CAM as a gzip-compressed `.nii.gz` (base64)
+* generate the axial middle-slice PNG (base64) from the original-resolution volume
+* blend the heatmap over the CT slice using a jet colormap for the 2-D overlay image
+* extract patient/study metadata from NIfTI header fields (`extract_nifti_patient_info`)
+* count distinct high-activation CAM clusters as a nodule candidate proxy (`count_nodule_candidates`)
+* append a structured row to a markdown prediction log file (`append_prediction_log`)
+* compute Grad-CAM peak activation voxel coordinates (x, y, z) in the original CT space
 * return all outputs as Python dictionary
 
 ---
@@ -962,6 +1084,8 @@ Lists Python packages required for the service:
 * `SimpleITK`
 * `numpy`
 * `Pillow`
+* `nibabel`
+* `scipy`
 * `python-multipart`
 
 ---
@@ -1054,6 +1178,7 @@ Lists Python packages required for the service:
    * **Edit** — update name, email, mobile, position, or role.
    * **Reset password** — set a new temporary password and mark `MustChangePassword = true`.
    * **Delete** — permanently remove the account (used when an employee leaves).
+4. Admin can navigate to **Dashboard → System Monitor** to view usage statistics, activity logs, and service health.
 
 ---
 
@@ -1158,9 +1283,12 @@ The admin pages use consistent section headers with count badges, expanded detai
 * dedicated .NET business/API layer
 * separate Python model service for inference
 * saved user-specific analysis history
-* Grad-CAM visualization for explainability
+* Grad-CAM++ visualization for explainability
 * SQLite makes local development simple
 * JWT auth with role claims
+* route-level code splitting with React.lazy — fast initial load
+* Lighthouse performance score 82 (up from 59) with FCP 1.3 s
+* unit tests for AdminController with xUnit and in-memory database
 
 ---
 
@@ -1193,28 +1321,36 @@ The admin pages use consistent section headers with count badges, expanded detai
 
 ### Frontend
 
-* React
-* TypeScript
-* React Router
-* CSS (custom design system in `index.css`)
+* React 19.2
+* TypeScript 5.9
+* Vite 7.3
+* React Router 7.13
+* NiiVue 0.68 (NIfTI CT viewer)
+* Recharts 3.8 (admin charts)
+* vite-imagetools 10.x (WebP image conversion at build time)
+* CSS (custom design system in `index.css`, dark/light theme)
 
 ### Backend
 
-* ASP.NET Core Web API
-* Entity Framework Core
+* ASP.NET Core 8.0 Web API
+* Entity Framework Core 8.0
 * SQLite
-* JWT Authentication
-* BCrypt
+* JWT Bearer authentication (24-hour expiry)
+* BCrypt password hashing
+* Swagger / OpenAPI
+* xUnit (unit tests with in-memory EF database)
 
 ### Python service
 
 * FastAPI
 * Uvicorn
-* PyTorch
+* PyTorch 2.x (CUDA 12.6)
 * TorchIO
 * SimpleITK
 * NumPy
 * Pillow
+* nibabel
+* GradCAM++ explainability
 
 ---
 

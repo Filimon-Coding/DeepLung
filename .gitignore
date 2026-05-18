@@ -71,6 +71,9 @@ underDevFileCollection/AITrainEndWouldBeDeleted/checkpoints/
 underDevFileCollection/**/checkpoints/
 underDevFileCollection/**/Data/
 
+# ── Ai_Train_End ──────────────────────────────────────────────────────────
+Ai_Train_End/Data/
+
 # ── backEnd/inferenceService ───────────────────────────────────────────────
 backEnd/inferenceService/FileData/
 backEnd/inferenceService/cam_cache/

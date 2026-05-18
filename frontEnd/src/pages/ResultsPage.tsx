@@ -27,7 +27,7 @@ function ResultsPage() {
 
   // gradcamNiftiB64 is lazy-fetched after result arrives (too large to include in analyze response)
   const [gradcamNiftiB64,     setGradcamNiftiB64]     = useState<string | null>(null);
-  const [gradcamNiftiLoading, setGradcamNiftiLoading] = useState(false);
+  const [_gradcamNiftiLoading, setGradcamNiftiLoading] = useState(false);
 
   // 2-D heatmap overlay toggle
   const [showHeatmap, setShowHeatmap] = useState(true);
