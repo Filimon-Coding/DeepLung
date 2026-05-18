@@ -9,7 +9,9 @@ namespace DeepLungCTApi.Controllers;
 [ApiController]
 [Route("api")]
 [Authorize]
-public class AnalysisHistoryController(AppDbContext db) : ControllerBase
+public class AnalysisHistoryController(
+    AppDbContext db,
+    IHttpClientFactory httpClientFactory) : ControllerBase
 {
     [HttpGet("history")]
     public async Task<IActionResult> GetHistory([FromQuery] int page = 1, [FromQuery] int pageSize = 20)
@@ -80,20 +82,40 @@ public class AnalysisHistoryController(AppDbContext db) : ControllerBase
     }
 
     /// <summary>Return the Grad-CAM NIfTI as a raw base64 text/plain response.
-    /// Returned as text/plain (not JSON) so System.Text.Json never touches the large string.</summary>
+    /// On first call the NIfTI is built by the Python service from the stored .npz cache
+    /// file and then cached in the DB so subsequent calls are instant.</summary>
     [HttpGet("history/{id:int}/gradcam-nifti")]
     public async Task<IActionResult> GetGradcamNifti(int id)
     {
         var userId = GetUserId();
         if (userId is null) return Unauthorized();
 
-        var b64 = await db.AnalysisResults
-            .Where(r => r.Id == id && r.UserId == userId.Value)
-            .Select(r => r.GradcamNiftiB64)
-            .FirstOrDefaultAsync();
+        var record = await db.AnalysisResults
+            .FirstOrDefaultAsync(r => r.Id == id && r.UserId == userId.Value);
 
-        if (b64 == null) return NotFound();
-        if (string.IsNullOrEmpty(b64)) return NotFound();
+        if (record == null) return NotFound();
+
+        // Return the cached NIfTI if it was already computed (either from a legacy
+        // record or from a previous lazy-fetch call on this record).
+        if (!string.IsNullOrEmpty(record.GradcamNiftiB64))
+            return Content(record.GradcamNiftiB64, "text/plain");
+
+        // No cached NIfTI yet — build it on demand via the Python service.
+        if (string.IsNullOrEmpty(record.CamCachePath))
+            return NotFound(new { detail = "CAM cache not available for this record." });
+
+        var client = httpClientFactory.CreateClient("PythonService");
+        var encodedPath = Uri.EscapeDataString(record.CamCachePath);
+
+        using var resp = await client.GetAsync($"/gradcam-nifti?cam_path={encodedPath}");
+        if (!resp.IsSuccessStatusCode)
+            return StatusCode((int)resp.StatusCode, new { detail = "NIfTI generation failed." });
+
+        var b64 = await resp.Content.ReadAsStringAsync();
+
+        // Cache in DB so future requests skip the Python call.
+        record.GradcamNiftiB64 = b64;
+        await db.SaveChangesAsync();
 
         return Content(b64, "text/plain");
     }
