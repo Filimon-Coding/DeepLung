@@ -22,37 +22,27 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+*.lscache
+
+# Python cache
+**/__pycache__/
+**/*.pyc
+**/*.pyo
 
 # Dataset
 rsna-pneumonia-detection-challenge.zip
 
+# .NET build artifacts
 backEnd/DeepLungCTApi/nifti_store
 **/*.db
 **/*.db-shm
 **/*.db-wal
 
-
-
-underDev/pylidc/*
-# underDev2/Data/*
-underDev2/Data/*
-
-nifti_output_python
+# Python venv
 .venv/
 .venv
-testData
-backEnd/inferenceService/FileData/*
 
-
-
-
-# Medical data / outputs (examples)
-nifti_output_python/
-underDev2/Data/
-underDev/pylidc/
-underdev3/Data/
-CLAUDE.md
-underdev3/checkpoints/
+# Medical data formats (large binary / LFS)
 **/*.nii
 **/*.nii.gz
 **/*.dcm
@@ -60,5 +50,29 @@ underdev3/checkpoints/
 **/*.raw
 **/*.npz
 **/*.npy
+
+# Misc
+nifti_output_python
+nifti_output_python/
+CLAUDE.md
 .fake
 gitDualPush.sh
+
+# ── underDevFileCollection (moved here from root) ──────────────────────────
+underDevFileCollection/testData/
+underDevFileCollection/underDev/pylidc/
+underDevFileCollection/underDev2/Data/
+underDevFileCollection/underDev2/checkpoints/
+underDevFileCollection/underdev3/Data/
+underDevFileCollection/underdev3/checkpoints/
+underDevFileCollection/underdev4/checkpoints/
+underDevFileCollection/AITrainEndWouldBeDeleted/checkpoints/
+# catch any other checkpoint or large-model folders inside underDevFileCollection
+underDevFileCollection/**/checkpoints/
+underDevFileCollection/**/Data/
+
+# ── backEnd/inferenceService ───────────────────────────────────────────────
+backEnd/inferenceService/FileData/
+backEnd/inferenceService/cam_cache/
+backEnd/inferenceService/artifacts160426/
+backEnd/inferenceService/Data/
