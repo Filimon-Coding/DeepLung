@@ -37,11 +37,9 @@ LATEST_MODEL_PATH = MODEL_DIR / "resnet3d_latest.pth"
 ############################################
 # TRAINING SETTINGS
 ############################################
-# scaled up from 128 — more context around nodules
-# reduced to fit larger volumes in VRAM
+CROP_SIZE  = (192, 192, 192)   # scaled up from 128 — more context around nodules
+BATCH_SIZE = 2                 # reduced to fit larger volumes in VRAM
 NUM_EPOCHS = 50
-CROP_SIZE  = (192, 192, 192)   
-BATCH_SIZE = 2                 
 NUM_WORKERS = 0
 PIN_MEMORY  = False
 
