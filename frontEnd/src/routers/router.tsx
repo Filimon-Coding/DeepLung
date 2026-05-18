@@ -1,20 +1,21 @@
 import { createBrowserRouter } from "react-router-dom";
+import { lazy } from "react";
 import App from "../App";
 import ProtectedRoute from "./ProtectedRoute";
 import AdminRoute from "./AdminRoute";
 
-import HomePage from "../pages/HomePage";
-import AnalyzePage from "../pages/AnalyzePage";
-import ResultsPage from "../pages/ResultsPage";
-import HistoryPage from "../pages/HistoryPage";
-import LoginPage from "../pages/LoginPage";
-import RegisterPage from "../pages/RegisterPage";
-import ChangePasswordPage from "../pages/ChangePasswordPage";
-import RequestAccessPage from "../pages/RequestAccessPage";
-import AdminDashboard from "../pages/admin/AdminDashboard";
-import AccessRequestsPage from "../pages/admin/AccessRequestsPage";
-import UsersPage from "../pages/admin/UsersPage";
-import SystemMonitorPage from "../pages/admin/SystemMonitorPage";
+const HomePage = lazy(() => import("../pages/HomePage"));
+const AnalyzePage = lazy(() => import("../pages/AnalyzePage"));
+const ResultsPage = lazy(() => import("../pages/ResultsPage"));
+const HistoryPage = lazy(() => import("../pages/HistoryPage"));
+const LoginPage = lazy(() => import("../pages/LoginPage"));
+const RegisterPage = lazy(() => import("../pages/RegisterPage"));
+const ChangePasswordPage = lazy(() => import("../pages/ChangePasswordPage"));
+const RequestAccessPage = lazy(() => import("../pages/RequestAccessPage"));
+const AdminDashboard = lazy(() => import("../pages/admin/AdminDashboard"));
+const AccessRequestsPage = lazy(() => import("../pages/admin/AccessRequestsPage"));
+const UsersPage = lazy(() => import("../pages/admin/UsersPage"));
+const SystemMonitorPage = lazy(() => import("../pages/admin/SystemMonitorPage"));
 
 const router = createBrowserRouter([
   {
