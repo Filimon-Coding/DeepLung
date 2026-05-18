@@ -44,22 +44,22 @@ train_gpu:
     - git fetch origin allDataUpload
     - git checkout origin/allDataUpload -- Data
     - git lfs pull --include="Data/**"
-    - mv Data underdev3/Data
+    - mv Data Ai_Train_End/Data
 
   script:
-    - cd underdev3
+    - cd Ai_Train_End
     - pip install -r requirements.txt
 
-    - echo "Listing underdev3 (top level):"
+    - echo "Listing Ai_Train_End (top level):"
     - ls -lah . || true
     - echo "Listing Data (top level):"
     - ls -lah Data || true
     - echo "Disk usage for Data:"
     - du -sh Data || true
 
-    - test -d Data || (echo "Missing underdev3/Data/ folder" && exit 1)
-    - test -d Data/Train || (echo "Missing underdev3/Data/Train" && exit 1)
-    - test -d Data/Test || (echo "Missing underdev3/Data/Test" && exit 1)
+    - test -d Data || (echo "Missing Ai_Train_End/Data/ folder" && exit 1)
+    - test -d Data/Train || (echo "Missing Ai_Train_End/Data/Train" && exit 1)
+    - test -d Data/Test || (echo "Missing Ai_Train_End/Data/Test" && exit 1)
 
     - python -u Resnet_classifier_test.py
 
@@ -71,7 +71,7 @@ train_gpu:
   artifacts:
     when: always
     paths:
-      - underdev3/checkpoints/
+      - Ai_Train_End/checkpoints/
       - backEnd/inferenceService/checkpoints/resnet3d_latest.pth
     expire_in: 14 days
 
@@ -90,19 +90,17 @@ finetune_medicalnet:
     - apt-get update
     - apt-get install -y --no-install-recommends git git-lfs curl
     - rm -rf /var/lib/apt/lists/*
-    # Pull training data from allDataUpload branch
     - git fetch origin allDataUpload
     - git checkout origin/allDataUpload -- Data
     - git lfs pull --include="Data/**"
-    - mv Data underdev4/Data
-    # Pull MedicalNet backbone from LFS
-    - git lfs pull --include="underdev4/checkpoints/resnet_18.pth"
+    - mv Data underDevFileCollection/underdev4/Data
+    - git lfs pull --include="underDevFileCollection/underdev4/checkpoints/resnet_18.pth"
 
   script:
-    - cd underdev4
+    - cd underDevFileCollection/underdev4
     - pip install -r requirements.txt
 
-    - echo "Verifying data and backbone …"
+    - echo "Verifying data and backbone..."
     - test -d Data/Train || (echo "Missing underdev4/Data/Train" && exit 1)
     - test -d Data/Test  || (echo "Missing underdev4/Data/Test"  && exit 1)
     - test -f checkpoints/resnet_18.pth || (echo "Missing resnet_18.pth in checkpoints/" && exit 1)
@@ -116,7 +114,7 @@ finetune_medicalnet:
   artifacts:
     when: always
     paths:
-      - underdev4/checkpoints/
+      - underDevFileCollection/underdev4/checkpoints/
     expire_in: 14 days
 
 train_gpu_fast:
@@ -137,22 +135,22 @@ train_gpu_fast:
     - git fetch origin allDataUpload
     - git checkout origin/allDataUpload -- Data
     - git lfs pull --include="Data/**"
-    - mv Data underdev3/Data
+    - mv Data Ai_Train_End/Data
 
   script:
-    - cd underdev3
+    - cd Ai_Train_End
     - pip install -r requirements.txt
 
-    - echo "Listing underdev3 (top level):"
+    - echo "Listing Ai_Train_End (top level):"
     - ls -lah . || true
     - echo "Listing Data (top level):"
     - ls -lah Data || true
     - echo "Disk usage for Data:"
     - du -sh Data || true
 
-    - test -d Data || (echo "Missing underdev3/Data/ folder" && exit 1)
-    - test -d Data/Train || (echo "Missing underdev3/Data/Train" && exit 1)
-    - test -d Data/Test || (echo "Missing underdev3/Data/Test" && exit 1)
+    - test -d Data || (echo "Missing Ai_Train_End/Data/ folder" && exit 1)
+    - test -d Data/Train || (echo "Missing Ai_Train_End/Data/Train" && exit 1)
+    - test -d Data/Test || (echo "Missing Ai_Train_End/Data/Test" && exit 1)
 
     - python -u Resnet_classifier_test.py
 
@@ -164,6 +162,6 @@ train_gpu_fast:
   artifacts:
     when: always
     paths:
-      - underdev3/checkpoints/
+      - Ai_Train_End/checkpoints/
       - backEnd/inferenceService/checkpoints/resnet3d_latest.pth
     expire_in: 14 days
