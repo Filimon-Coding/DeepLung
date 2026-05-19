@@ -51,7 +51,7 @@ Same three windows will open. Then open `http://localhost:5173`.
 
 ### Manual start (if the script does not work)
 
-Open three separate terminals and run one command in each:
+Open three separate terminals and run one command in each :
 
 **Terminal 1 - Backend API**
 ```bash
@@ -86,7 +86,7 @@ The system creates a default admin account on first run.
 | Email    | admin@deeplungct.local |
 | Password | Admin@2026             |
 
-The system will ask you to set a new password on first login. Choose anything you like.
+The system will ask you to set a new password on first login. Choose anything you like. 
 
 ---
 
