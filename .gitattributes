@@ -7,3 +7,4 @@
 *.npy filter=lfs diff=lfs merge=lfs -text
 underdev4/checkpoints/resnet_18.pth filter=lfs diff=lfs merge=lfs -text
 *.pth filter=lfs diff=lfs merge=lfs -text
+backEnd/inferenceService/checkpoints/resnet3d_latest.pth !filter !diff !merge
