@@ -29,6 +29,8 @@ This opens three terminal windows automatically:
 - Python inference service on port 8001
 - React frontend on port 5173
 
+> Dependencies are installed automatically — `pip install` for the inference service and `npm install` for the frontend run on startup.
+
 Wait about 10-15 seconds for all three to finish starting, then open:
 
 ```

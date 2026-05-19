@@ -64,10 +64,10 @@ open_term "DeepLungCTApi (.NET)" \
 
 # Python inference service
 open_term "inferenceService (FastAPI)" \
-    "cd '$BASE_DIR/backEnd/inferenceService' && echo '>>> In \$(pwd)' && source .venv/bin/activate && uvicorn app:app --host 127.0.0.1 --port 8001 --reload"
+    "cd '$BASE_DIR/backEnd/inferenceService' && echo '>>> In \$(pwd)' && ([ ! -d .venv ] && python3 -m venv .venv || true) && source .venv/bin/activate && pip install -r requirements.txt --quiet && uvicorn app:app --host 127.0.0.1 --port 8001 --reload"
 
 # React frontend
 open_term "frontEnd (Vite)" \
-    "cd '$BASE_DIR/frontEnd' && echo '>>> In \$(pwd)' && npm run dev"
+    "cd '$BASE_DIR/frontEnd' && echo '>>> In \$(pwd)' && npm install && npm run dev"
 
 echo "All services started!"
